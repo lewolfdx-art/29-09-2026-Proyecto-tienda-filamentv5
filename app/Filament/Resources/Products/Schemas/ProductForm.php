@@ -43,9 +43,18 @@ class ProductForm
                     ->numeric()
                     ->minValue(0)
                     ->default(0),
+                TextInput::make('min_stock')
+                    ->label('Stock mínimo')
+                    ->required()
+                    ->numeric()
+                    ->minValue(0)
+                    ->default(5)
+                    ->helperText('Cuando el stock llegue a este número, el producto aparece como stock bajo.'),
                 FileUpload::make('image')
                     ->label('Imagen')
                     ->image()
+                    ->imageEditor()
+                    ->maxSize(2048)
                     ->disk('public')
                     ->directory('products'),
                 Toggle::make('is_active')

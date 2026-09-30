@@ -1,0 +1,65 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament';
+@source '../../../../resources/views/filament';
+
+/* Ajusta estos colores para cambiar el tono (R, G, B) */
+:root {
+    --cy-soft: 103, 232, 249; /* cyan suave */
+    --cy-deep: 8, 145, 178;   /* cyan profundo */
+}
+
+/* ---------- MODO OSCURO ---------- */
+
+/* Fondo con degradado */
+.dark .fi-body {
+    background:
+        radial-gradient(1200px 600px at 85% -10%, rgba(var(--cy-soft), 0.16), transparent 60%),
+        linear-gradient(135deg, #0a1c21 0%, #0d2f36 45%, #061014 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+}
+
+.dark .fi-layout,
+.dark .fi-main-ctn {
+    background: transparent;
+}
+
+/* Menú lateral y barra superior translúcidos */
+.dark .fi-sidebar,
+.dark .fi-topbar {
+    background: rgba(7, 22, 27, 0.72);
+    backdrop-filter: blur(12px);
+    border-color: rgba(var(--cy-soft), 0.10);
+}
+
+/* Tarjetas: secciones, tablas y estadísticas */
+.dark .fi-section,
+.dark .fi-ta-ctn,
+.dark .fi-wi-stats-overview-stat {
+    background: rgba(8, 26, 31, 0.80);
+    border-radius: 1rem;
+    box-shadow:
+        0 0 0 1px rgba(var(--cy-soft), 0.12),
+        0 8px 24px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(6px);
+}
+
+/* Ítem activo del menú */
+.dark .fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
+    background: rgba(var(--cy-soft), 0.12);
+}
+
+/* ---------- MODO CLARO ---------- */
+
+html:not(.dark) .fi-body {
+    background: linear-gradient(135deg, #f0fdff 0%, #e3f6f9 50%, #f8fafc 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+}
+
+html:not(.dark) .fi-section,
+html:not(.dark) .fi-ta-ctn,
+html:not(.dark) .fi-wi-stats-overview-stat {
+    border-radius: 1rem;
+}

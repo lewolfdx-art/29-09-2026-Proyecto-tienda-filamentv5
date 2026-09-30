@@ -12,8 +12,10 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 class ProductsTable
@@ -42,7 +44,17 @@ class ProductsTable
                     ->sortable(),
                 TextColumn::make('stock')
                     ->label('Stock')
+                    ->badge()
+                    ->color(fn (Product $record) => match (true) {
+                        $record->stock <= 0 => 'danger',
+                        $record->stock <= $record->min_stock => 'warning',
+                        default => 'success',
+                    })
                     ->sortable(),
+                TextColumn::make('min_stock')
+                    ->label('Mínimo')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 IconColumn::make('is_active')
                     ->label('Activo')
                     ->boolean(),
@@ -58,6 +70,10 @@ class ProductsTable
                     ->trueLabel('Activos')
                     ->falseLabel('Ocultos')
                     ->default(true),
+                Filter::make('low_stock')
+                    ->label('Stock bajo')
+                    ->query(fn (Builder $query) => $query->whereColumn('stock', '<=', 'min_stock'))
+                    ->toggle(),
             ])
             ->recordActions([
                 ViewAction::make(),

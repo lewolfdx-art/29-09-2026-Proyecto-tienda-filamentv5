@@ -39,6 +39,23 @@ class ProductResource extends Resource
         return ProductsTable::configure($table);
     }
 
+    public static function getNavigationBadge(): ?string
+    {
+        $count = Product::query()->active()->lowStock()->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): string|array|null
+    {
+        return 'danger';
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'Productos con stock bajo';
+    }
+
     public static function getRelations(): array
     {
         return [

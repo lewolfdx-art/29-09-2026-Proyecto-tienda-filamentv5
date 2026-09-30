@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\StoreNotifier;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -24,6 +25,10 @@ class Order extends Model
 
             if (! $wasCommitted && $isCommitted) {
                 $order->adjustStock(-1);
+
+                if ($order->status === 'paid') {
+                    StoreNotifier::orderPaid($order);
+                }
             } elseif ($wasCommitted && ! $isCommitted) {
                 $order->adjustStock(1);
             }
@@ -58,8 +63,22 @@ class Order extends Model
     public function adjustStock(int $direction): void
     {
         foreach ($this->items()->get() as $item) {
-            Product::where('id', $item->product_id)
+            $product = Product::find($item->product_id);
+
+            if (! $product) {
+                continue;
+            }
+
+            $before = (int) $product->stock;
+
+            Product::where('id', $product->id)
                 ->increment('stock', $direction * $item->quantity);
+
+            $product->refresh();
+
+            if ($direction < 0 && StoreNotifier::crossedLowStock($before, (int) $product->stock, (int) $product->min_stock)) {
+                StoreNotifier::lowStock($product);
+            }
         }
     }
 
