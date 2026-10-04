@@ -11,7 +11,15 @@ class Order extends Model
 {
     public const COMMITTED_STATUSES = ['paid', 'shipped', 'delivered'];
 
-    protected $fillable = ['customer_id', 'status', 'total', 'notes'];
+    public const STATUS_LABELS = [
+        'pending' => 'Pendiente de pago',
+        'paid' => 'Pagado',
+        'shipped' => 'Enviado',
+        'delivered' => 'Entregado',
+        'cancelled' => 'Cancelado',
+    ];
+
+    protected $fillable = ['customer_id', 'status', 'total', 'notes', 'expires_at'];
 
     protected static function booted(): void
     {
@@ -37,7 +45,15 @@ class Order extends Model
 
     protected function casts(): array
     {
-        return ['total' => 'decimal:2'];
+        return [
+            'total' => 'decimal:2',
+            'expires_at' => 'datetime',
+        ];
+    }
+
+    public function statusLabel(): string
+    {
+        return self::STATUS_LABELS[$this->status] ?? $this->status;
     }
 
     public function customer(): BelongsTo
