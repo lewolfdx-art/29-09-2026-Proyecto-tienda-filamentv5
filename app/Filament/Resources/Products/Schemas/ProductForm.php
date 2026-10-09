@@ -60,6 +60,10 @@ class ProductForm
                 Toggle::make('is_active')
                     ->label('Activo')
                     ->default(true),
+                Toggle::make('is_featured')
+                    ->label('Destacado')
+                    ->helperText('Aparece en el carrusel 3D de la tienda (se muestran hasta 10).')
+                    ->default(false),
                 Textarea::make('description')
                     ->label('Descripción')
                     ->columnSpanFull(),

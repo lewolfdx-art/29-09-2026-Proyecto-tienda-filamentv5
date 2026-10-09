@@ -2,4 +2,118 @@
 
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
-@source '../**/*.js';   
+@source '../**/*.js';
+
+/* ===== Carrusel 3D de productos destacados ===== */
+
+.fc-stage {
+    --fc-w: 170px;
+    --fc-h: 230px;
+    --fc-persp: 1400px;
+    --fc-scale: 1;
+    position: relative;
+    height: 440px;
+    overflow: hidden;
+}
+
+.fc-slider {
+    position: absolute;
+    width: var(--fc-w);
+    height: var(--fc-h);
+    top: calc(50% - (var(--fc-h) / 2));
+    left: calc(50% - (var(--fc-w) / 2));
+    transform-style: preserve-3d;
+    transform: perspective(var(--fc-persp)) rotateX(-12deg);
+    animation: fc-spin 28s linear infinite;
+}
+
+/* Se detiene al pasar el cursor (o al enfocar un producto con el teclado). */
+.fc-stage:hover .fc-slider,
+.fc-stage:focus-within .fc-slider {
+    animation-play-state: paused;
+}
+
+@keyframes fc-spin {
+    from {
+        transform: perspective(var(--fc-persp)) rotateX(-12deg) rotateY(0deg);
+    }
+    to {
+        transform: perspective(var(--fc-persp)) rotateX(-12deg) rotateY(360deg);
+    }
+}
+
+.fc-item {
+    position: absolute;
+    inset: 0;
+    display: block;
+    overflow: hidden;
+    border-radius: 22px;
+    border: 3px solid rgba(103, 232, 249, 0.7);
+    background: #0b1f24;
+    box-shadow: 0 0 24px rgba(103, 232, 249, 0.25);
+    transform: rotateY(calc((var(--position) - 1) * (360 / var(--quantity)) * 1deg))
+        translateZ(calc(var(--radius) * var(--fc-scale)));
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.fc-item:hover,
+.fc-item:focus-visible {
+    border-color: #a5f3fc;
+    box-shadow: 0 0 36px rgba(103, 232, 249, 0.55);
+    outline: none;
+}
+
+.fc-item img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.fc-label {
+    position: absolute;
+    inset: auto 0 0 0;
+    padding: 28px 10px 10px;
+    background: linear-gradient(to top, rgba(4, 14, 18, 0.95), transparent);
+    text-align: left;
+}
+
+.fc-name {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: #fff;
+}
+
+.fc-price {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #a5f3fc;
+}
+
+.fc-tag {
+    display: inline-block;
+    margin-top: 2px;
+    font-size: 0.7rem;
+    color: #fca5a5;
+}
+
+@media (max-width: 640px) {
+    .fc-stage {
+        --fc-w: 130px;
+        --fc-h: 180px;
+        --fc-scale: 0.6;
+        height: 340px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fc-slider {
+        animation-duration: 90s;
+    }
+}

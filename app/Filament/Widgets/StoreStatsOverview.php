@@ -14,8 +14,10 @@ class StoreStatsOverview extends StatsOverviewWidget
 {
     use HasWidgetShield;
 
+    
     protected static ?int $sort = 0;
 
+    protected ?string $pollingInterval = null;
     protected function getStats(): array
     {
         $now = now();

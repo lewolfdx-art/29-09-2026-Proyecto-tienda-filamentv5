@@ -15,7 +15,7 @@ class Product extends Model
 
     protected $fillable = [
         'category_id', 'name', 'slug', 'sku', 'description',
-        'price', 'stock', 'min_stock', 'image', 'is_active',
+        'price', 'stock', 'min_stock', 'image', 'is_active', 'is_featured',
     ];
 
     protected static function booted(): void
@@ -40,6 +40,7 @@ class Product extends Model
         return [
             'price' => 'decimal:2',
             'is_active' => 'boolean',
+            'is_featured' => 'boolean',
         ];
     }
 
@@ -82,6 +83,11 @@ class Product extends Model
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
+    }
+
+    public function scopeFeatured(Builder $query): Builder
+    {
+        return $query->where('products.is_featured', true);
     }
 
     public function scopeLowStock(Builder $query): Builder

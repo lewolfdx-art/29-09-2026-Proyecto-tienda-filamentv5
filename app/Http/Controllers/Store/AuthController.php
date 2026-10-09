@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Store;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use Filament\Facades\Filament;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
@@ -19,7 +20,7 @@ class AuthController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:customers,email'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:customers,email', 'unique:users,email'],
             'password' => ['required', 'confirmed', Password::min(8)],
         ], [
             'name.required' => 'Escribe tu nombre.',
@@ -36,7 +37,7 @@ class AuthController extends Controller
         Auth::guard('customer')->login($customer);
         $request->session()->regenerate();
 
-        return redirect()->intended(route('cart.index'));
+        return redirect()->intended(route('store.index'));
     }
 
     public function showLogin()
@@ -55,20 +56,35 @@ class AuthController extends Controller
             'password.required' => 'Escribe tu contraseña.',
         ]);
 
-        if (! Auth::guard('customer')->attempt($credentials, $request->boolean('remember'))) {
-            return back()
-                ->withErrors(['email' => 'Correo o contraseña incorrectos.'])
-                ->onlyInput('email');
+        $remember = $request->boolean('remember');
+
+        // 1) Equipo de la tienda: entra y va directo al panel.
+        if (Auth::guard('web')->attempt($credentials, $remember)) {
+            $request->session()->regenerate();
+
+            return redirect()->to(Filament::getPanel('admin')->getUrl());
         }
 
-        $request->session()->regenerate();
+        // 2) Clientes: entran a la tienda.
+        if (Auth::guard('customer')->attempt($credentials, $remember)) {
+            $request->session()->regenerate();
 
-        return redirect()->intended(route('store.index'));
+            return redirect()->intended(route('store.index'));
+        }
+
+        return back()
+            ->withErrors(['email' => 'Correo o contraseña incorrectos.'])
+            ->onlyInput('email');
     }
 
     public function logout(Request $request)
     {
         Auth::guard('customer')->logout();
+        Auth::guard('web')->logout();
+
+        // Se conserva el carrito (vive en la sesión), pero se limpian las marcas de sesión.
+        $request->session()->forget(['password_hash_web', 'password_hash_customer']);
+        $request->session()->regenerate();
         $request->session()->regenerateToken();
 
         return redirect()->route('store.index');

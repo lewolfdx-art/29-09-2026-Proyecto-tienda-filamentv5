@@ -4,7 +4,10 @@
 
 @section('content')
     <div class="mx-auto max-w-md rounded-2xl border border-cyan-300/10 bg-slate-900/70 p-8">
-        <h1 class="mb-6 text-2xl font-bold text-white">Ingresar</h1>
+        <h1 class="mb-2 text-2xl font-bold text-white">Ingresar</h1>
+        <p class="mb-6 text-sm text-slate-400">
+            
+        </p>
 
         <form method="POST" action="{{ route('login') }}" class="space-y-4">
             @csrf

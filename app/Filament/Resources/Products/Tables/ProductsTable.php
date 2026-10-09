@@ -12,6 +12,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
@@ -58,6 +59,9 @@ class ProductsTable
                 IconColumn::make('is_active')
                     ->label('Activo')
                     ->boolean(),
+                ToggleColumn::make('is_featured')
+                    ->label('Destacado')
+                    ->disabled(fn (Product $record) => ! (auth()->user()?->can('update', $record) ?? false)),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -73,6 +77,10 @@ class ProductsTable
                 Filter::make('low_stock')
                     ->label('Stock bajo')
                     ->query(fn (Builder $query) => $query->whereColumn('stock', '<=', 'min_stock'))
+                    ->toggle(),
+                Filter::make('featured')
+                    ->label('Solo destacados')
+                    ->query(fn (Builder $query) => $query->where('is_featured', true))
                     ->toggle(),
             ])
             ->recordActions([

@@ -5,6 +5,7 @@
 @section('title', config('app.name') . ' — Catálogo')
 
 @section('content')
+    @include('store.partials.featured', ['featured' => $featured])
     @php
         $baseQuery = array_filter([
             'q' => $search,
@@ -97,20 +98,34 @@
             @endforeach
         </div>
 
-        <div class="mt-8 flex items-center justify-between text-sm">
+        <nav class="mt-10 flex items-center justify-between gap-3" aria-label="Paginación">
             @if ($products->onFirstPage())
-                <span class="text-slate-600">← Anterior</span>
+                <span aria-disabled="true"
+                      class="cursor-not-allowed rounded-xl border border-white/10 px-5 py-2 text-sm font-semibold text-slate-600">
+                    Anterior
+                </span>
             @else
-                <a href="{{ $products->previousPageUrl() }}" class="text-cyan-200 hover:underline">← Anterior</a>
+                <a href="{{ $products->previousPageUrl() }}" rel="prev"
+                   class="rounded-xl border border-cyan-300/30 px-5 py-2 text-sm font-semibold text-cyan-200 transition hover:border-cyan-300/60 hover:bg-cyan-300/10">
+                    Anterior
+                </a>
             @endif
 
-            <span class="text-slate-400">Página {{ $products->currentPage() }}</span>
+            <span class="rounded-full border border-white/10 px-4 py-1 text-sm text-slate-300">
+                Página {{ $products->currentPage() }}
+            </span>
 
             @if ($products->hasMorePages())
-                <a href="{{ $products->nextPageUrl() }}" class="text-cyan-200 hover:underline">Siguiente →</a>
+                <a href="{{ $products->nextPageUrl() }}" rel="next"
+                   class="rounded-xl bg-cyan-300 px-5 py-2 text-sm font-semibold text-slate-900 transition hover:bg-cyan-200">
+                    Siguiente
+                </a>
             @else
-                <span class="text-slate-600">Siguiente →</span>
+                <span aria-disabled="true"
+                      class="cursor-not-allowed rounded-xl border border-white/10 px-5 py-2 text-sm font-semibold text-slate-600">
+                    Siguiente
+                </span>
             @endif
-        </div>
+        </nav>
     @endif
 @endsection

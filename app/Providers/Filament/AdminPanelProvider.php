@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
+use Filament\Actions\Action;
 use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -12,6 +13,7 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -35,7 +37,18 @@ class AdminPanelProvider extends PanelProvider
             ->defaultThemeMode(ThemeMode::Dark)
             ->sidebarCollapsibleOnDesktop()
             ->databaseNotifications()
-            ->databaseNotificationsPolling('2s')
+            ->databaseNotificationsPolling('30s')
+            ->userMenuItems([
+                Action::make('store')
+                    ->label('Ir a la tienda')
+                    ->icon('heroicon-o-building-storefront')
+                    ->url(fn (): string => route('store.index'))
+                    ->openUrlInNewTab(),
+            ])
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn () => view('filament.hooks.session-expired'),
+            )
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')

@@ -42,7 +42,20 @@ class CatalogController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('store.index', compact('products', 'categories', 'search', 'categorySlug', 'sort'));
+        // El carrusel de destacados solo se muestra en la portada del catálogo.
+        $featured = collect();
+
+        if ($search === '' && $categorySlug === '' && (int) $request->query('page', 1) <= 1) {
+            $featured = Product::query()
+                ->visibleInStore()
+                ->featured()
+                ->withReserved()
+                ->latest('products.updated_at')
+                ->limit(10)
+                ->get();
+        }
+
+        return view('store.index', compact('products', 'categories', 'search', 'categorySlug', 'sort', 'featured'));
     }
 
     public function show(string $slug)
