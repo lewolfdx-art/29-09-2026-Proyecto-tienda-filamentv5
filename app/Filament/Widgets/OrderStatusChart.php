@@ -26,6 +26,7 @@ class OrderStatusChart extends ApexChartWidget
             'shipped' => 'Enviado',
             'delivered' => 'Entregado',
             'cancelled' => 'Cancelado',
+            'expired' => 'Expirado',
         ];
 
         $counts = Order::where('created_at', '>=', now()->subDays(30))
@@ -43,7 +44,7 @@ class OrderStatusChart extends ApexChartWidget
                 ->values()
                 ->all(),
             'labels' => array_values($statuses),
-            'colors' => ['#94a3b8', '#22d3ee', '#38bdf8', '#34d399', '#f87171'],
+            'colors' => ['#94a3b8', '#22d3ee', '#38bdf8', '#34d399', '#f87171', '#fbbf24'],
             'stroke' => ['width' => 0],
             'legend' => [
                 'position' => 'bottom',

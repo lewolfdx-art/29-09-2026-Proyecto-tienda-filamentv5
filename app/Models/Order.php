@@ -22,6 +22,7 @@ class Order extends Model
         'shipped' => 'Enviado',
         'delivered' => 'Entregado',
         'cancelled' => 'Cancelado',
+        'expired' => 'Expirado',
     ];
 
     protected $fillable = ['customer_id', 'status', 'total', 'notes', 'expires_at'];

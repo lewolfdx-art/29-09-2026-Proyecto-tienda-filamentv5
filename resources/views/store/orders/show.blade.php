@@ -26,6 +26,11 @@
                 Te contactaremos con las instrucciones de pago.
             </div>
         @endif
+    @elseif ($order->status === 'expired')
+        <div class="mb-6 rounded-xl border border-amber-300/30 bg-amber-300/10 px-4 py-3 text-sm text-amber-200">
+            Este pedido expiró: no se completó el pago a tiempo y la reserva de los productos se liberó.
+            Si todavía quieres pedirlos, vuelve al catálogo para hacer un nuevo pedido.
+        </div>
     @endif
 
     <div class="grid gap-6 lg:grid-cols-3">

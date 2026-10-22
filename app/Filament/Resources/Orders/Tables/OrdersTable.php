@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Orders\Tables;
 
+use App\Models\Order;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -18,6 +19,15 @@ class OrdersTable
                 TextColumn::make('customer.name')
                     ->searchable(),
                 TextColumn::make('status')
+                    ->label('Estado')
+                    ->badge()
+                    ->formatStateUsing(fn (string $state): string => Order::STATUS_LABELS[$state] ?? $state)
+                    ->color(fn (string $state): string => match ($state) {
+                        'paid', 'shipped', 'delivered' => 'success',
+                        'cancelled' => 'danger',
+                        'expired' => 'warning',
+                        default => 'gray',
+                    })
                     ->searchable(),
                 TextColumn::make('total')
                     ->numeric()

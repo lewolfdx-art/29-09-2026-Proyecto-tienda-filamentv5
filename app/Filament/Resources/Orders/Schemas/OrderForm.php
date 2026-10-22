@@ -27,6 +27,7 @@ class OrderForm
                         'shipped' => 'Enviado',
                         'delivered' => 'Entregado',
                         'cancelled' => 'Cancelado',
+                        'expired' => 'Expirado',
                     ])
                     ->default('pending')
                     ->required(),
