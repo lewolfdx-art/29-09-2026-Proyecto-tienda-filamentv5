@@ -10,6 +10,9 @@
         $baseQuery = array_filter([
             'q' => $search,
             'orden' => $sort !== 'recientes' ? $sort : null,
+            'precio_min' => $minPrice,
+            'precio_max' => $maxPrice,
+            'disponible' => $availableOnly ? 1 : null,
         ]);
         $chip = 'rounded-full border px-4 py-1.5 text-sm transition';
         $chipOn = 'border-cyan-300/40 bg-cyan-300/20 text-cyan-200';
@@ -27,21 +30,39 @@
             @endforeach
         </div>
 
-        <form method="GET" action="{{ route('store.index') }}" class="flex items-center gap-2 text-sm">
+        <form method="GET" action="{{ route('store.index') }}" class="flex flex-wrap items-center gap-2 text-sm">
             @if ($search !== '')
                 <input type="hidden" name="q" value="{{ $search }}">
             @endif
             @if ($categorySlug !== '')
                 <input type="hidden" name="categoria" value="{{ $categorySlug }}">
             @endif
+            <input type="number" name="precio_min" min="0" step="0.01" placeholder="Mín. S/"
+                   value="{{ $minPrice ?? '' }}"
+                   class="w-28 rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-slate-200 placeholder:text-slate-500 focus:border-cyan-300/50 focus:outline-none">
+            <input type="number" name="precio_max" min="0" step="0.01" placeholder="Máx. S/"
+                   value="{{ $maxPrice ?? '' }}"
+                   class="w-28 rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-slate-200 placeholder:text-slate-500 focus:border-cyan-300/50 focus:outline-none">
+            <label class="flex items-center gap-1 text-slate-400">
+                <input type="checkbox" name="disponible" value="1" @checked($availableOnly)
+                       class="rounded border-white/20 bg-slate-900 text-cyan-300 focus:ring-cyan-300/40">
+                Solo disponibles
+            </label>
             <label for="orden" class="text-slate-400">Ordenar por</label>
-            <select id="orden" name="orden" onchange="this.form.submit()"
-                    class="rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-slate-200 focus:border-cyan-300/50 focus:outline-none">
+            <select id="orden" name="orden" class="rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-slate-200 focus:border-cyan-300/50 focus:outline-none">
                 <option value="recientes" @selected($sort === 'recientes')>Más recientes</option>
                 <option value="precio_asc" @selected($sort === 'precio_asc')>Precio: menor a mayor</option>
                 <option value="precio_desc" @selected($sort === 'precio_desc')>Precio: mayor a menor</option>
                 <option value="nombre" @selected($sort === 'nombre')>Nombre</option>
             </select>
+            <button type="submit"
+                    class="rounded-xl bg-cyan-300 px-4 py-2 font-semibold text-slate-900 transition hover:bg-cyan-200">
+                Aplicar
+            </button>
+            <a href="{{ route('store.index') }}"
+               class="rounded-xl border border-white/10 px-4 py-2 text-slate-300 transition hover:border-cyan-300/30">
+                Limpiar
+            </a>
         </form>
     </div>
 

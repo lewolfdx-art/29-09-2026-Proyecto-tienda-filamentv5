@@ -16,6 +16,9 @@ class CatalogController extends Controller
         $sort = in_array($request->query('orden'), ['recientes', 'precio_asc', 'precio_desc', 'nombre'], true)
             ? $request->query('orden')
             : 'recientes';
+        $minPrice = $request->query('precio_min');
+        $maxPrice = $request->query('precio_max');
+        $availableOnly = $request->boolean('disponible');
 
         $products = Product::query()
             ->visibleInStore()
@@ -24,6 +27,9 @@ class CatalogController extends Controller
             ->search($search)
             ->when($categorySlug !== '', fn ($query) => $query
                 ->whereHas('category', fn ($q) => $q->where('slug', $categorySlug)))
+            ->when(is_numeric($minPrice) && $minPrice !== '', fn ($q) => $q->where('products.price', '>=', (float) $minPrice))
+            ->when(is_numeric($maxPrice) && $maxPrice !== '', fn ($q) => $q->where('products.price', '<=', (float) $maxPrice))
+            ->when($availableOnly, fn ($q) => $q->havingRaw('COALESCE(available_stock, 0) > 0'))
             ->when($sort === 'precio_asc', fn ($q) => $q->orderBy('products.price'))
             ->when($sort === 'precio_desc', fn ($q) => $q->orderByDesc('products.price'))
             ->when($sort === 'nombre', fn ($q) => $q->orderBy('products.name'))
@@ -36,10 +42,10 @@ class CatalogController extends Controller
             ->orderBy('name')
             ->get();
 
-        // El carrusel de destacados solo se muestra en la portada del catálogo.
+        // El carrusel de destacados solo se muestra en la portada del catǭlogo.
         $featured = collect();
 
-        if ($search === '' && $categorySlug === '' && (int) $request->query('page', 1) <= 1) {
+        if ($search === '' && $categorySlug === '' && $minPrice === null && $maxPrice === null && ! $availableOnly && (int) $request->query('page', 1) <= 1) {
             $featured = Product::query()
                 ->visibleInStore()
                 ->featured()
@@ -49,7 +55,7 @@ class CatalogController extends Controller
                 ->get();
         }
 
-        return view('store.index', compact('products', 'categories', 'search', 'categorySlug', 'sort', 'featured'));
+        return view('store.index', compact('products', 'categories', 'search', 'categorySlug', 'sort', 'featured', 'minPrice', 'maxPrice', 'availableOnly'));
     }
 
     public function show(string $slug)
