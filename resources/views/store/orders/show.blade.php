@@ -54,9 +54,9 @@
         <aside class="h-fit rounded-2xl border border-cyan-300/10 bg-slate-900/70 p-6 text-sm">
             <h2 class="mb-3 font-semibold text-white">Datos de entrega</h2>
             <p class="text-slate-300">{{ $customer->name }}</p>
-            <p class="text-slate-400">{{ $customer->phone }}</p>
-            <p class="text-slate-400">{{ $customer->address }}</p>
-            <p class="text-slate-400">{{ $customer->city }}</p>
+            <p class="text-slate-400">{{ $order->phone ?? $customer->phone }}</p>
+            <p class="text-slate-400">{{ $order->address ?? $customer->address }}</p>
+            <p class="text-slate-400">{{ $order->city ?? $customer->city }}</p>
 
             @if ($order->notes)
                 <h2 class="mb-1 mt-4 font-semibold text-white">Notas</h2>

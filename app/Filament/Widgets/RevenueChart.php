@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Order;
+use App\Support\DateExpressions;
 use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
 
@@ -22,7 +23,7 @@ class RevenueChart extends ApexChartWidget
     {
         $rows = Order::whereIn('status', Order::COMMITTED_STATUSES)
             ->whereYear('created_at', now()->year)
-            ->selectRaw('MONTH(created_at) as month, SUM(total) as total')
+            ->selectRaw(DateExpressions::month('created_at').' as month, SUM(total) as total')
             ->groupBy('month')
             ->pluck('total', 'month');
 

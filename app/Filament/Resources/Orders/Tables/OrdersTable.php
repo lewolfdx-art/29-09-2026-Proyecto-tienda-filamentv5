@@ -30,7 +30,8 @@ class OrdersTable
                     })
                     ->searchable(),
                 TextColumn::make('total')
-                    ->numeric()
+                    ->label('Total')
+                    ->money('PEN')
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()

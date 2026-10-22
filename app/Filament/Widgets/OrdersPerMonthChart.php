@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Order;
+use App\Support\DateExpressions;
 use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
 
@@ -21,7 +22,7 @@ class OrdersPerMonthChart extends ApexChartWidget
     protected function getOptions(): array
     {
         $rows = Order::whereYear('created_at', now()->year)
-            ->selectRaw('MONTH(created_at) as month, COUNT(*) as total')
+            ->selectRaw(DateExpressions::month('created_at').' as month, COUNT(*) as total')
             ->groupBy('month')
             ->pluck('total', 'month');
 

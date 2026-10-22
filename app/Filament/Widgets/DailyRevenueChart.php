@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Order;
+use App\Support\DateExpressions;
 use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
 
@@ -24,7 +25,7 @@ class DailyRevenueChart extends ApexChartWidget
 
         $rows = Order::whereIn('status', Order::COMMITTED_STATUSES)
             ->where('created_at', '>=', $from)
-            ->selectRaw('DATE(created_at) as day, SUM(total) as total')
+            ->selectRaw(DateExpressions::date('created_at').' as day, SUM(total) as total')
             ->groupBy('day')
             ->pluck('total', 'day');
 

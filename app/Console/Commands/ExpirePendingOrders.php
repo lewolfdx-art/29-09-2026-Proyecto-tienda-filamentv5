@@ -25,13 +25,10 @@ class ExpirePendingOrders extends Command
             return self::SUCCESS;
         }
 
-        $expired = 0;
-
-        $pending->eachById(function (Order $order) use (&$expired) {
-            $order->update(['status' => 'expired']);
-
-            $expired++;
-        });
+        // Actualización condicional en una sola consulta: si el cliente pagó
+        // entre la lectura y este momento, el pedido ya no cumple el filtro
+        // y no se sobreescribe.
+        $expired = $pending->update(['status' => 'expired']);
 
         $this->info('Se expiraron '.$expired.' pedido(s).');
 

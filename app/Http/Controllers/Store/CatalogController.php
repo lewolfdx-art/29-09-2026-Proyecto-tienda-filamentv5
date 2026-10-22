@@ -29,7 +29,9 @@ class CatalogController extends Controller
                 ->whereHas('category', fn ($q) => $q->where('slug', $categorySlug)))
             ->when(is_numeric($minPrice) && $minPrice !== '', fn ($q) => $q->where('products.price', '>=', (float) $minPrice))
             ->when(is_numeric($maxPrice) && $maxPrice !== '', fn ($q) => $q->where('products.price', '<=', (float) $maxPrice))
-            ->when($availableOnly, fn ($q) => $q->havingRaw('COALESCE(available_stock, 0) > 0'))
+            ->when($availableOnly, function ($q) {
+                $q->whereRaw('(SELECT COALESCE(SUM(order_items.quantity), 0) FROM order_items INNER JOIN orders ON orders.id = order_items.order_id WHERE orders.status = ? AND (orders.expires_at IS NULL OR orders.expires_at > ?) AND order_items.product_id = products.id) < products.stock', ['pending', now()]);
+            })
             ->when($sort === 'precio_asc', fn ($q) => $q->orderBy('products.price'))
             ->when($sort === 'precio_desc', fn ($q) => $q->orderByDesc('products.price'))
             ->when($sort === 'nombre', fn ($q) => $q->orderBy('products.name'))

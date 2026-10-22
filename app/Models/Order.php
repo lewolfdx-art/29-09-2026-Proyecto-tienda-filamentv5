@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Mail\OrderStatusUpdated;
 use App\Support\StoreNotifier;
 use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Mail;
 
 class Order extends Model
 {
@@ -25,7 +27,10 @@ class Order extends Model
         'expired' => 'Expirado',
     ];
 
-    protected $fillable = ['customer_id', 'status', 'total', 'notes', 'expires_at'];
+    protected $fillable = [
+        'customer_id', 'status', 'total', 'notes',
+        'phone', 'address', 'city', 'expires_at',
+    ];
 
     protected static function booted(): void
     {
@@ -42,6 +47,7 @@ class Order extends Model
                 return;
             }
 
+            $previousStatus = (string) $order->getOriginal('status');
             $wasCommitted = in_array($order->getOriginal('status'), self::COMMITTED_STATUSES, true);
             $isCommitted = $order->isCommitted();
 
@@ -54,6 +60,16 @@ class Order extends Model
             } elseif ($wasCommitted && ! $isCommitted) {
                 $order->adjustStock(1);
             }
+
+            $order->notifyStatusChange($previousStatus);
+        });
+
+        // Si se borra un pedido confirmado, devolvemos su stock antes de que la
+        // cascada de la base de datos elimine los artículos sin disparar eventos.
+        static::deleting(function (Order $order) {
+            if ($order->isCommitted()) {
+                $order->adjustStock(1);
+            }
         });
     }
 
@@ -61,13 +77,34 @@ class Order extends Model
     {
         return [
             'total' => 'decimal:2',
+            'phone' => 'encrypted',
+            'address' => 'encrypted',
             'expires_at' => 'datetime',
         ];
     }
 
     public function statusLabel(): string
     {
-        return self::STATUS_LABELS[$this->status] ?? $this->status;
+        return $this->statusLabelFor($this->status);
+    }
+
+    public function statusLabelFor(?string $status): string
+    {
+        return self::STATUS_LABELS[$status ?? ''] ?? (string) $status;
+    }
+
+    /**
+     * Avisa al cliente por correo cuando el pedido cambia de estado.
+     */
+    private function notifyStatusChange(string $previousStatus): void
+    {
+        $email = $this->customer?->email;
+
+        if (! $email) {
+            return;
+        }
+
+        Mail::to($email)->queue(new OrderStatusUpdated($this, $previousStatus));
     }
 
     /**

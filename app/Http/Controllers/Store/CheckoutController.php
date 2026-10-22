@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Store;
 
 use App\Http\Controllers\Controller;
+use App\Mail\OrderPlaced;
+use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -10,7 +12,7 @@ use App\Support\Cart;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use App\Models\Customer;
+use Illuminate\Support\Facades\Mail;
 class CheckoutController extends Controller
 {
     /** Horas que se reservan las unidades de un pedido sin pagar. */
@@ -103,6 +105,9 @@ class CheckoutController extends Controller
                 'status' => 'pending',
                 'total' => 0,
                 'notes' => $data['notes'] ?? null,
+                'phone' => $data['phone'],
+                'address' => $data['address'],
+                'city' => $data['city'],
                 'expires_at' => now()->addHours(self::HOLD_HOURS),
             ]);
 
@@ -124,8 +129,14 @@ class CheckoutController extends Controller
 
         Cart::clear();
 
+        $order = $result['order']->load('items.product', 'customer');
+
+        if ($order->customer?->email) {
+            Mail::to($order->customer->email)->queue(new OrderPlaced($order));
+        }
+
         return redirect()
-            ->route('orders.show', $result['order']->id)
-            ->with('status', "¡Pedido #{$result['order']->id} recibido! Tus productos quedan reservados.");
+            ->route('orders.show', $order->id)
+            ->with('status', "¡Pedido #{$order->id} recibido! Tus productos quedan reservados.");
     }
 }

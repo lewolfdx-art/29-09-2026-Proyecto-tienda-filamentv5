@@ -41,7 +41,7 @@ class ProductsTable
                     ->sortable(),
                 TextColumn::make('price')
                     ->label('Precio')
-                    ->money()
+                    ->money('PEN')
                     ->sortable(),
                 TextColumn::make('stock')
                     ->label('Stock')

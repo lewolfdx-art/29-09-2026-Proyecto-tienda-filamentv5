@@ -71,7 +71,7 @@ class StoreNotifier
 
         Notification::make()
             ->title('Pedido #' . $order->id . ' pagado')
-            ->body('Cliente: ' . ($order->customer?->name ?? '—') . ' · Total: $' . number_format((float) $order->total, 2))
+            ->body('Cliente: ' . ($order->customer?->name ?? '—') . ' · Total: ' . Money::format($order->total))
             ->icon('heroicon-o-banknotes')
             ->iconColor('success')
             ->actions([

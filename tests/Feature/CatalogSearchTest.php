@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
+use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -124,6 +126,28 @@ class CatalogSearchTest extends TestCase
             strpos($response->getContent(), 'Producto Caro'),
             strpos($response->getContent(), 'Producto Barato')
         );
+    }
+
+    public function test_it_filters_only_products_with_available_stock(): void
+    {
+        Product::factory()->create(['name' => 'Producto Disponible', 'stock' => 10]);
+        Product::factory()->create(['name' => 'Producto Agotado', 'stock' => 0]);
+
+        $reserved = Product::factory()->create(['name' => 'Producto Reservado', 'stock' => 2]);
+        $order = Order::factory()->pending()->create();
+
+        OrderItem::factory()->create([
+            'order_id' => $order->id,
+            'product_id' => $reserved->id,
+            'quantity' => 2,
+        ]);
+
+        $response = $this->get(route('store.index', ['disponible' => 1]));
+
+        $response->assertOk();
+        $response->assertSee('Producto Disponible');
+        $response->assertDontSee('Producto Agotado');
+        $response->assertDontSee('Producto Reservado');
     }
 
     public function test_it_returns_404_for_an_unknown_product(): void

@@ -4,6 +4,8 @@ namespace App\Filament\Widgets;
 
 use App\Models\Customer;
 use App\Models\Order;
+use App\Support\DateExpressions;
+use App\Support\Money;
 use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Carbon\CarbonInterface;
 use Filament\Widgets\StatsOverviewWidget;
@@ -33,7 +35,7 @@ class StoreStatsOverview extends StatsOverviewWidget
 
             $stats[] = $this->buildStat(
                 'Ingresos (30 días)',
-                '$' . number_format($revenue, 2),
+                Money::format($revenue),
                 $revenue,
                 $previousRevenue,
                 $this->dailySeries(
@@ -105,7 +107,7 @@ class StoreStatsOverview extends StatsOverviewWidget
     {
         $rows = $query
             ->where('created_at', '>=', now()->subDays($days - 1)->startOfDay())
-            ->selectRaw("DATE(created_at) as day, {$expression} as value")
+            ->selectRaw(DateExpressions::date('created_at')." as day, {$expression} as value")
             ->groupBy('day')
             ->pluck('value', 'day');
 

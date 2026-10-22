@@ -77,11 +77,11 @@ class ItemsRelationManager extends RelationManager
                     ->label('Cantidad'),
                 TextColumn::make('unit_price')
                     ->label('Precio unitario')
-                    ->money(),
+                    ->money('PEN'),
                 TextColumn::make('subtotal')
                     ->label('Subtotal')
                     ->state(fn ($record) => $record->quantity * $record->unit_price)
-                    ->money(),
+                    ->money('PEN'),
             ])
             ->headerActions([
                 CreateAction::make()

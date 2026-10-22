@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Customer;
+use App\Support\DateExpressions;
 use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
 
@@ -26,7 +27,7 @@ class TotalCustomersChart extends ApexChartWidget
         $running = Customer::where('created_at', '<', now()->startOfYear())->count();
 
         $rows = Customer::whereYear('created_at', now()->year)
-            ->selectRaw('MONTH(created_at) as month, COUNT(*) as total')
+            ->selectRaw(DateExpressions::month('created_at').' as month, COUNT(*) as total')
             ->groupBy('month')
             ->pluck('total', 'month');
 

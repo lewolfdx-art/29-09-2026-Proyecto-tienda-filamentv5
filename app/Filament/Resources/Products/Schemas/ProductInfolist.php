@@ -25,7 +25,8 @@ class ProductInfolist
                     ->placeholder('-')
                     ->columnSpanFull(),
                 TextEntry::make('price')
-                    ->money(),
+                    ->label('Precio')
+                    ->money('PEN'),
                 TextEntry::make('stock')
                     ->numeric(),
                 ImageEntry::make('image')

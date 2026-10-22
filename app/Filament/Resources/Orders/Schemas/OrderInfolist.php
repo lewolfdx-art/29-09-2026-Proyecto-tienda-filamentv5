@@ -12,11 +12,24 @@ class OrderInfolist
         return $schema
             ->components([
                 TextEntry::make('customer.name')
-                    ->label('Customer'),
-                TextEntry::make('status'),
+                    ->label('Cliente'),
+                TextEntry::make('status')
+                    ->label('Estado')
+                    ->formatStateUsing(fn (string $state): string => \App\Models\Order::STATUS_LABELS[$state] ?? $state),
                 TextEntry::make('total')
-                    ->numeric(),
+                    ->label('Total')
+                    ->money('PEN'),
+                TextEntry::make('phone')
+                    ->label('Teléfono')
+                    ->placeholder('-'),
+                TextEntry::make('address')
+                    ->label('Dirección')
+                    ->placeholder('-'),
+                TextEntry::make('city')
+                    ->label('Ciudad')
+                    ->placeholder('-'),
                 TextEntry::make('notes')
+                    ->label('Notas')
                     ->placeholder('-')
                     ->columnSpanFull(),
                 TextEntry::make('created_at')

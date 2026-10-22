@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Order;
+use App\Support\DateExpressions;
 use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
 
@@ -23,7 +24,7 @@ class OrdersHeatmapChart extends ApexChartWidget
     protected function getOptions(): array
     {
         $rows = Order::where('created_at', '>=', now()->subDays(90))
-            ->selectRaw('DAYOFWEEK(created_at) as dow, HOUR(created_at) as hour, COUNT(*) as total')
+            ->selectRaw(DateExpressions::dayOfWeek('created_at').' as dow, '.DateExpressions::hour('created_at').' as hour, COUNT(*) as total')
             ->groupBy('dow', 'hour')
             ->get();
 
@@ -32,7 +33,7 @@ class OrdersHeatmapChart extends ApexChartWidget
             $matrix[(int) $row->dow][(int) $row->hour] = (int) $row->total;
         }
 
-        // DAYOFWEEK de MySQL: 1 = domingo ... 7 = sábado.
+        // DateExpressions normaliza el día: 1 = domingo ... 7 = sábado.
         $names = [1 => 'Dom', 2 => 'Lun', 3 => 'Mar', 4 => 'Mié', 5 => 'Jue', 6 => 'Vie', 7 => 'Sáb'];
 
         // ApexCharts dibuja la primera serie abajo, así que van en orden inverso
