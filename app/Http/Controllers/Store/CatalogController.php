@@ -21,13 +21,7 @@ class CatalogController extends Controller
             ->visibleInStore()
             ->withReserved()
             ->with('category')
-            ->when($search !== '', function ($query) use ($search) {
-                $like = '%' . addcslashes($search, '%_\\') . '%';
-
-                $query->where(fn ($q) => $q
-                    ->where('products.name', 'like', $like)
-                    ->orWhere('products.description', 'like', $like));
-            })
+            ->search($search)
             ->when($categorySlug !== '', fn ($query) => $query
                 ->whereHas('category', fn ($q) => $q->where('slug', $categorySlug)))
             ->when($sort === 'precio_asc', fn ($q) => $q->orderBy('products.price'))

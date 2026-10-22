@@ -3,15 +3,19 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasAutoSlug;
+use App\Support\Search;
 use App\Support\StoreNotifier;
+use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Product extends Model
 {
-    use HasAutoSlug;
+    /** @use HasFactory<ProductFactory> */
+    use HasAutoSlug, HasFactory;
 
     protected $fillable = [
         'category_id', 'name', 'slug', 'sku', 'description',
@@ -78,6 +82,30 @@ class Product extends Model
                 $query->whereNull('orders.expires_at')
                     ->orWhere('orders.expires_at', '>', now());
             });
+    }
+
+    /**
+     * Busca por nombre o descripción tratando el término de forma literal.
+     *
+     * Los comodines de LIKE se escapan con un carácter que se comporta igual
+     * en todos los drivers soportados (ver App\Support\Search).
+     */
+    public function scopeSearch(Builder $query, ?string $term): Builder
+    {
+        $term = trim((string) $term);
+
+        if ($term === '') {
+            return $query;
+        }
+
+        $pattern = Search::pattern($term);
+        $name = $query->qualifyColumn('name');
+        $description = $query->qualifyColumn('description');
+
+        return $query->where(function (Builder $q) use ($name, $description, $pattern) {
+            $q->whereRaw("{$name} LIKE ? ESCAPE ?", [$pattern, Search::ESCAPE])
+                ->orWhereRaw("{$description} LIKE ? ESCAPE ?", [$pattern, Search::ESCAPE]);
+        });
     }
 
     public function scopeActive(Builder $query): Builder
