@@ -6,6 +6,6 @@ class Money
 {
     public static function format(float|string|null $amount): string
     {
-        return '$' . number_format((float) $amount, 2);
+        return 'S/ '.number_format((float) $amount, 2);
     }
 }
