@@ -2,12 +2,14 @@
 
 namespace App\Filament\Resources\Customers\Tables;
 
+use App\Models\Customer;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class CustomersTable
 {
@@ -16,17 +18,20 @@ class CustomersTable
         return $table
             ->columns([
                 TextColumn::make('name')
+                    ->label('Nombre')
                     ->searchable(),
                 TextColumn::make('email')
-                    ->label('Email address')
+                    ->label('Correo electrónico')
                     ->searchable(),
                 TextColumn::make('phone')
-                    ->searchable(),
+                    ->label('Teléfono'),
                 TextColumn::make('address')
-                    ->searchable(),
+                    ->label('Dirección'),
                 TextColumn::make('city')
+                    ->label('Ciudad')
                     ->searchable(),
                 TextColumn::make('created_at')
+                    ->label('Registrado')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -35,6 +40,12 @@ class CustomersTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            // El teléfono y la dirección se guardan cifrados, así que no admiten
+            // un LIKE sobre la columna. La búsqueda global usa el índice ciego
+            // que mantiene el modelo (ver Customer::scopeSearch).
+            ->searchUsing(function (Builder $query, string $search): void {
+                $query->search($search);
+            })
             ->filters([
                 //
             ])
