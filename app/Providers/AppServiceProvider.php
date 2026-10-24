@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Http\Responses\LogoutResponse;
+use App\Models\Product;
+use App\Observers\ProductObserver;
 use App\Policies\RolePolicy;
 use BezhanSalleh\LanguageSwitch\LanguageSwitch;
 use Filament\Auth\Http\Responses\Contracts\LogoutResponse as LogoutResponseContract;
@@ -19,6 +21,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Product::observe(ProductObserver::class);
+
         Gate::policy(Role::class, RolePolicy::class);
 
         // Al cerrar sesión en el panel, el equipo vuelve a la tienda.

@@ -8,6 +8,7 @@ use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Facades\Filament;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use pxlrbt\FilamentExcel\Actions\ExportAction;
 use pxlrbt\FilamentExcel\Actions\ExportBulkAction;
+use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 class ProductsTable
@@ -63,7 +65,7 @@ class ProductsTable
                     ->boolean(),
                 ToggleColumn::make('is_featured')
                     ->label('Destacado')
-                    ->disabled(fn (Product $record) => ! (auth()->user()?->can('update', $record) ?? false)),
+                    ->disabled(fn (Product $record) => ! (Filament::auth()->user()?->can('update', $record) ?? false)),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -86,13 +88,30 @@ class ProductsTable
                     ->toggle(),
             ])
             ->headerActions([
-                ExportAction::make()
-                    ->label('Exportar')
+                ExportAction::make('exportar_bi')
+                    ->label('Exportar para Power BI')
                     ->exports([
                         ExcelExport::make()
-                            ->fromTable()
-                            ->except(['cover_thumb_url'])
-                            ->withFilename('productos-'.now()->toDateString()),
+                            ->withColumns([
+                                Column::make('id')->heading('product_id'),
+                                Column::make('category_id')->heading('category_id'),
+                                Column::make('category.name')->heading('category_name'),
+                                Column::make('name')->heading('product_name'),
+                                Column::make('sku')->heading('sku'),
+                                Column::make('price')->heading('price'),
+                                Column::make('stock')->heading('stock'),
+                                Column::make('min_stock')->heading('min_stock'),
+                                Column::make('is_active')->heading('is_active'),
+                                Column::make('is_featured')->heading('is_featured'),
+                                Column::make('created_at')
+                                    ->heading('created_at')
+                                    ->formatStateUsing(fn ($state) => $state?->format('Y-m-d H:i:s')),
+                                Column::make('updated_at')
+                                    ->heading('updated_at')
+                                    ->formatStateUsing(fn ($state) => $state?->format('Y-m-d H:i:s')),
+                            ])
+                            ->withFilename('productos_powerbi_'.now()->format('Y-m-d_His'))
+                            ->queue(),
                     ]),
             ])
             ->recordActions([
@@ -102,7 +121,7 @@ class ProductsTable
                     ->label(fn (Product $record) => $record->is_active ? 'Ocultar' : 'Mostrar')
                     ->icon(fn (Product $record) => $record->is_active ? Heroicon::OutlinedEyeSlash : Heroicon::OutlinedEye)
                     ->color(fn (Product $record) => $record->is_active ? 'warning' : 'success')
-                    ->visible(fn (Product $record) => auth()->user()?->can('update', $record) ?? false)
+                    ->visible(fn (Product $record) => Filament::auth()->user()?->can('update', $record) ?? false)
                     ->requiresConfirmation()
                     ->action(fn (Product $record) => $record->update(['is_active' => ! $record->is_active])),
             ])
@@ -114,7 +133,7 @@ class ProductsTable
                         ->label('Ocultar seleccionados')
                         ->icon(Heroicon::OutlinedEyeSlash)
                         ->color('warning')
-                        ->visible(fn () => auth()->user()?->can('update', new Product) ?? false)
+                        ->visible(fn () => Filament::auth()->user()?->can('update', new Product) ?? false)
                         ->requiresConfirmation()
                         ->action(fn (Collection $records) => $records->each->update(['is_active' => false]))
                         ->deselectRecordsAfterCompletion(),
@@ -122,7 +141,7 @@ class ProductsTable
                         ->label('Mostrar seleccionados')
                         ->icon(Heroicon::OutlinedEye)
                         ->color('success')
-                        ->visible(fn () => auth()->user()?->can('update', new Product) ?? false)
+                        ->visible(fn () => Filament::auth()->user()?->can('update', new Product) ?? false)
                         ->action(fn (Collection $records) => $records->each->update(['is_active' => true]))
                         ->deselectRecordsAfterCompletion(),
                 ]),

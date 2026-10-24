@@ -71,10 +71,9 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->plugins([
-                FilamentShieldPlugin::make(),
-                FilamentApexChartsPlugin::make(),
-                QuickCreatePlugin::make(),
-            ]);
+    ->plugins([
+        FilamentShieldPlugin::make(),
+        FilamentApexChartsPlugin::make(),
+    ]);
     }
 }

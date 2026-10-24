@@ -19,6 +19,8 @@ class StoreStatsOverview extends StatsOverviewWidget
     
     protected static ?int $sort = 0;
 
+    protected static bool $isLazy = true;
+
     protected ?string $pollingInterval = null;
     protected function getStats(): array
     {

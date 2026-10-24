@@ -19,6 +19,8 @@ class OrdersHeatmapChart extends ApexChartWidget
 
     protected int|string|array $columnSpan = 'full';
 
+    protected static bool $isLazy = true;
+
     protected ?string $pollingInterval = null;
 
     protected function getOptions(): array

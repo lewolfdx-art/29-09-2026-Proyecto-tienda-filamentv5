@@ -16,7 +16,7 @@
     @endphp
 
     <header class="sticky top-0 z-20 border-b border-cyan-300/10 bg-slate-950/70 backdrop-blur">
-        <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3">
+        <div class="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-3">
             <a href="{{ route('store.index') }}" class="text-lg font-bold text-cyan-200">{{ config('app.name') }}</a>
 
             <form action="{{ route('store.index') }}" method="GET" class="order-last w-full flex-1 sm:order-0 sm:w-auto">
@@ -61,7 +61,7 @@
         </div>
     </header>
 
-    <main class="mx-auto max-w-6xl px-4 py-8">
+    <main class="mx-auto max-w-7xl px-4 py-8">
         @if (session('status'))
             <div class="mb-6 rounded-xl border border-emerald-300/30 bg-emerald-300/10 px-4 py-3 text-sm text-emerald-200">
                 {{ session('status') }}

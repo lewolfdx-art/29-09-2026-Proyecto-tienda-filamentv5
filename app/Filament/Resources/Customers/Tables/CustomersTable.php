@@ -12,6 +12,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use pxlrbt\FilamentExcel\Actions\ExportAction;
 use pxlrbt\FilamentExcel\Actions\ExportBulkAction;
+use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 use STS\FilamentImpersonate\Actions\Impersonate;
 
@@ -54,12 +55,24 @@ class CustomersTable
                 //
             ])
             ->headerActions([
-                ExportAction::make()
-                    ->label('Exportar')
+                ExportAction::make('exportar_bi')
+                    ->label('Exportar para Power BI')
                     ->exports([
                         ExcelExport::make()
-                            ->fromTable()
-                            ->withFilename('clientes-'.now()->toDateString()),
+                            ->withColumns([
+                                Column::make('id')->heading('customer_id'),
+                                Column::make('name')->heading('customer_name'),
+                                Column::make('email')->heading('email'),
+                                Column::make('city')->heading('city'),
+                                Column::make('created_at')
+                                    ->heading('created_at')
+                                    ->formatStateUsing(fn ($state) => $state?->format('Y-m-d H:i:s')),
+                                Column::make('updated_at')
+                                    ->heading('updated_at')
+                                    ->formatStateUsing(fn ($state) => $state?->format('Y-m-d H:i:s')),
+                            ])
+                            ->withFilename('clientes_powerbi_'.now()->format('Y-m-d_His'))
+                            ->queue(),
                     ]),
             ])
             ->recordActions([

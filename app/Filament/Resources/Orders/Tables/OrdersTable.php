@@ -11,6 +11,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use pxlrbt\FilamentExcel\Actions\ExportAction;
 use pxlrbt\FilamentExcel\Actions\ExportBulkAction;
+use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 class OrdersTable
@@ -49,12 +50,28 @@ class OrdersTable
                 //
             ])
             ->headerActions([
-                ExportAction::make()
-                    ->label('Exportar')
+                ExportAction::make('exportar_bi')
+                    ->label('Exportar para Power BI')
                     ->exports([
                         ExcelExport::make()
-                            ->fromTable()
-                            ->withFilename('pedidos-'.now()->toDateString()),
+                            ->withColumns([
+                                Column::make('id')->heading('order_id'),
+                                Column::make('customer_id')->heading('customer_id'),
+                                Column::make('customer.name')->heading('customer_name'),
+                                Column::make('status')->heading('status'),
+                                Column::make('total')->heading('total_amount'),
+                                Column::make('created_at')
+                                    ->heading('order_date')
+                                    ->formatStateUsing(fn ($state) => $state?->format('Y-m-d H:i:s')),
+                                Column::make('updated_at')
+                                    ->heading('updated_at')
+                                    ->formatStateUsing(fn ($state) => $state?->format('Y-m-d H:i:s')),
+                                Column::make('expires_at')
+                                    ->heading('expires_at')
+                                    ->formatStateUsing(fn ($state) => $state?->format('Y-m-d H:i:s')),
+                            ])
+                            ->withFilename('pedidos_powerbi_'.now()->format('Y-m-d_His'))
+                            ->queue(),
                     ]),
             ])
             ->recordActions([

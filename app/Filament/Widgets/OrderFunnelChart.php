@@ -16,6 +16,8 @@ class OrderFunnelChart extends ApexChartWidget
 
     protected static ?int $sort = 11;
 
+    protected static bool $isLazy = true;
+
     protected ?string $pollingInterval = null;
 
     protected function getOptions(): array
