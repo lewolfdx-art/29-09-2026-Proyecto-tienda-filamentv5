@@ -7,13 +7,29 @@
 @section('content')
     <a href="{{ route('store.index') }}" class="mb-6 inline-block text-sm text-cyan-200 hover:underline">← Volver al catálogo</a>
 
+    @php
+        $cover = $product->cover_url;
+        $gallery = $product->gallery_urls;
+    @endphp
+
     <div class="grid gap-8 md:grid-cols-2">
-        <div class="overflow-hidden rounded-2xl border border-cyan-300/10 bg-slate-900/70">
-            @if ($product->image)
-                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
-                     class="aspect-square w-full object-cover">
-            @else
-                <div class="flex aspect-square w-full items-center justify-center bg-white/5 text-8xl">📦</div>
+        <div class="space-y-3">
+            <div class="overflow-hidden rounded-2xl border border-cyan-300/10 bg-slate-900/70">
+                @if ($cover)
+                    <img src="{{ $cover }}" alt="{{ $product->name }}"
+                         class="aspect-square w-full object-cover">
+                @else
+                    <div class="flex aspect-square w-full items-center justify-center bg-white/5 text-8xl">📦</div>
+                @endif
+            </div>
+
+            @if (count($gallery) > 1)
+                <div class="grid grid-cols-4 gap-2">
+                    @foreach ($gallery as $url)
+                        <img src="{{ $url }}" alt="{{ $product->name }}"
+                             class="aspect-square w-full rounded-xl border border-cyan-300/10 object-cover">
+                    @endforeach
+                </div>
             @endif
         </div>
 

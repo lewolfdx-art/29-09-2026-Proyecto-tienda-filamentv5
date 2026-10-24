@@ -18,8 +18,8 @@
                 @php($product = $line['product'])
                 <div class="flex flex-wrap items-center gap-4 rounded-2xl border border-cyan-300/10 bg-slate-900/70 p-4">
                     <a href="{{ route('store.show', $product->slug) }}" class="shrink-0">
-                        @if ($product->image)
-                            <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
+                        @if ($product->cover_thumb_url)
+                            <img src="{{ $product->cover_thumb_url }}" alt="{{ $product->name }}"
                                  class="h-20 w-20 rounded-xl object-cover">
                         @else
                             <div class="flex h-20 w-20 items-center justify-center rounded-xl bg-white/5 text-3xl">📦</div>

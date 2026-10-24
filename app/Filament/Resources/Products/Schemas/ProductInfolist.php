@@ -2,8 +2,10 @@
 
 namespace App\Filament\Resources\Products\Schemas;
 
+use App\Models\Product;
 use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\SpatieMediaLibraryImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
 
@@ -29,7 +31,14 @@ class ProductInfolist
                     ->money('PEN'),
                 TextEntry::make('stock')
                     ->numeric(),
+                SpatieMediaLibraryImageEntry::make('gallery')
+                    ->label('Imágenes')
+                    ->collection('gallery')
+                    ->conversion('thumb')
+                    ->visible(fn (Product $record): bool => $record->getMedia('gallery')->isNotEmpty()),
                 ImageEntry::make('image')
+                    ->label('Imagen')
+                    ->visible(fn (Product $record): bool => $record->getMedia('gallery')->isEmpty())
                     ->placeholder('-'),
                 IconEntry::make('is_active')
                     ->boolean(),

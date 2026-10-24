@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use Awcodes\QuickCreate\QuickCreatePlugin;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Actions\Action;
 use Filament\Enums\ThemeMode;
@@ -73,6 +74,7 @@ class AdminPanelProvider extends PanelProvider
             ->plugins([
                 FilamentShieldPlugin::make(),
                 FilamentApexChartsPlugin::make(),
+                QuickCreatePlugin::make(),
             ]);
     }
 }

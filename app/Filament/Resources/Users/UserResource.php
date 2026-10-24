@@ -14,6 +14,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use STS\FilamentImpersonate\Actions\Impersonate;
 
 class UserResource extends Resource
 {
@@ -79,6 +80,8 @@ class UserResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->recordActions([
+                Impersonate::make()
+                    ->hidden(fn (User $record) => $record->id === auth()->id()),
                 EditAction::make(),
                 DeleteAction::make()
                     ->hidden(fn (User $record) => $record->id === auth()->id()),

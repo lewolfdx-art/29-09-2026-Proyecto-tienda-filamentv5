@@ -11,11 +11,14 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Product extends Model
+class Product extends Model implements HasMedia
 {
     /** @use HasFactory<ProductFactory> */
-    use HasAutoSlug, HasFactory;
+    use HasAutoSlug, HasFactory, InteractsWithMedia;
 
     protected $fillable = [
         'category_id', 'name', 'slug', 'sku', 'description',
@@ -46,6 +49,67 @@ class Product extends Model
             'is_active' => 'boolean',
             'is_featured' => 'boolean',
         ];
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('gallery');
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('thumb')
+            ->nonQueued()
+            ->width(300)
+            ->height(300);
+
+        $this->addMediaConversion('card')
+            ->nonQueued()
+            ->width(800)
+            ->height(800);
+    }
+
+    protected function coverUrl(): Attribute
+    {
+        return Attribute::get(function (): ?string {
+            $media = $this->getFirstMedia('gallery');
+
+            if ($media instanceof Media) {
+                return $media->getUrl();
+            }
+
+            return filled($this->image) ? asset('storage/'.$this->image) : null;
+        });
+    }
+
+    protected function coverThumbUrl(): Attribute
+    {
+        return Attribute::get(function (): ?string {
+            $media = $this->getFirstMedia('gallery');
+
+            if ($media instanceof Media) {
+                return $media->hasGeneratedConversion('thumb')
+                    ? $media->getUrl('thumb')
+                    : $media->getUrl();
+            }
+
+            return filled($this->image) ? asset('storage/'.$this->image) : null;
+        });
+    }
+
+    protected function galleryUrls(): Attribute
+    {
+        return Attribute::get(function (): array {
+            $urls = $this->getMedia('gallery')
+                ->map(fn (Media $media): string => $media->getUrl())
+                ->all();
+
+            if ($urls === [] && filled($this->image)) {
+                $urls[] = asset('storage/'.$this->image);
+            }
+
+            return $urls;
+        });
     }
 
     /**

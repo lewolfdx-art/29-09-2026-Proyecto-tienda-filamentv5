@@ -2,6 +2,7 @@
 
 @source '../../../../app/Filament';
 @source '../../../../resources/views/filament';
+@source '../../../../vendor/bezhansalleh/filament-language-switch/**';
 
 /* Ajusta estos colores para cambiar el tono (R, G, B) */
 :root {

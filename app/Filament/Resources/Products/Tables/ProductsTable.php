@@ -18,6 +18,9 @@ use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use pxlrbt\FilamentExcel\Actions\ExportAction;
+use pxlrbt\FilamentExcel\Actions\ExportBulkAction;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 class ProductsTable
 {
@@ -25,9 +28,8 @@ class ProductsTable
     {
         return $table
             ->columns([
-                ImageColumn::make('image')
+                ImageColumn::make('cover_thumb_url')
                     ->label('Imagen')
-                    ->disk('public')
                     ->height(50)
                     ->square(),
                 TextColumn::make('name')
@@ -83,6 +85,16 @@ class ProductsTable
                     ->query(fn (Builder $query) => $query->where('is_featured', true))
                     ->toggle(),
             ])
+            ->headerActions([
+                ExportAction::make()
+                    ->label('Exportar')
+                    ->exports([
+                        ExcelExport::make()
+                            ->fromTable()
+                            ->except(['cover_thumb_url'])
+                            ->withFilename('productos-'.now()->toDateString()),
+                    ]),
+            ])
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
@@ -96,6 +108,8 @@ class ProductsTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    ExportBulkAction::make()
+                        ->label('Exportar seleccionados'),
                     BulkAction::make('hide')
                         ->label('Ocultar seleccionados')
                         ->icon(Heroicon::OutlinedEyeSlash)

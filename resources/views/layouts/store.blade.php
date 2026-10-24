@@ -88,5 +88,7 @@
     <footer class="border-t border-cyan-300/10 py-6 text-center text-xs text-slate-400">
         © {{ date('Y') }} {{ config('app.name') }}
     </footer>
+
+    <x-impersonate::banner/>
 </body>
 </html>

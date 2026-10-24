@@ -9,6 +9,9 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use pxlrbt\FilamentExcel\Actions\ExportAction;
+use pxlrbt\FilamentExcel\Actions\ExportBulkAction;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 class OrdersTable
 {
@@ -45,12 +48,23 @@ class OrdersTable
             ->filters([
                 //
             ])
+            ->headerActions([
+                ExportAction::make()
+                    ->label('Exportar')
+                    ->exports([
+                        ExcelExport::make()
+                            ->fromTable()
+                            ->withFilename('pedidos-'.now()->toDateString()),
+                    ]),
+            ])
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    ExportBulkAction::make()
+                        ->label('Exportar seleccionados'),
                     DeleteBulkAction::make(),
                 ]),
             ]);

@@ -19,8 +19,8 @@
                     @foreach ($featured as $product)
                         <a href="{{ route('store.show', $product->slug) }}" class="fc-item"
                            style="--position: {{ $loop->iteration }}" aria-label="Ver {{ $product->name }}">
-                            @if ($product->image)
-                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" loading="lazy">
+                            @if ($product->cover_thumb_url)
+                                <img src="{{ $product->cover_thumb_url }}" alt="{{ $product->name }}" loading="lazy">
                             @else
                                 <div class="flex h-full w-full items-center justify-center bg-white/5 text-5xl">📦</div>
                             @endif
@@ -41,8 +41,8 @@
                 @foreach ($featured as $product)
                     <a href="{{ route('store.show', $product->slug) }}"
                        class="w-44 overflow-hidden rounded-2xl border border-cyan-300/30 bg-slate-900/70 transition hover:border-cyan-300/60">
-                        @if ($product->image)
-                            <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
+                        @if ($product->cover_thumb_url)
+                            <img src="{{ $product->cover_thumb_url }}" alt="{{ $product->name }}"
                                  class="aspect-square w-full object-cover">
                         @else
                             <div class="flex aspect-square w-full items-center justify-center bg-white/5 text-5xl">📦</div>

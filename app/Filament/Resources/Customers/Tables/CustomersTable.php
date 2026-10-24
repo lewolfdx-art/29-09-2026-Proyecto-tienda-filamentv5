@@ -10,6 +10,10 @@ use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use pxlrbt\FilamentExcel\Actions\ExportAction;
+use pxlrbt\FilamentExcel\Actions\ExportBulkAction;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
+use STS\FilamentImpersonate\Actions\Impersonate;
 
 class CustomersTable
 {
@@ -49,12 +53,26 @@ class CustomersTable
             ->filters([
                 //
             ])
+            ->headerActions([
+                ExportAction::make()
+                    ->label('Exportar')
+                    ->exports([
+                        ExcelExport::make()
+                            ->fromTable()
+                            ->withFilename('clientes-'.now()->toDateString()),
+                    ]),
+            ])
             ->recordActions([
                 ViewAction::make(),
+                Impersonate::make()
+                    ->guard('customer')
+                    ->redirectTo(route('store.index')),
                 EditAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    ExportBulkAction::make()
+                        ->label('Exportar seleccionados'),
                     DeleteBulkAction::make(),
                 ]),
             ]);

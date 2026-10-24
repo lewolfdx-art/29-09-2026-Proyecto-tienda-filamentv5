@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Products\Schemas;
 
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -50,13 +50,17 @@ class ProductForm
                     ->minValue(0)
                     ->default(5)
                     ->helperText('Cuando el stock llegue a este número, el producto aparece como stock bajo.'),
-                FileUpload::make('image')
-                    ->label('Imagen')
+                SpatieMediaLibraryFileUpload::make('gallery')
+                    ->label('Imágenes')
+                    ->collection('gallery')
+                    ->multiple()
+                    ->reorderable()
                     ->image()
                     ->imageEditor()
                     ->maxSize(2048)
-                    ->disk('public')
-                    ->directory('products'),
+                    ->conversion('thumb')
+                    ->panelLayout('grid')
+                    ->helperText('La primera imagen se usa como portada. Arrástralas para cambiar el orden.'),
                 Toggle::make('is_active')
                     ->label('Activo')
                     ->default(true),
