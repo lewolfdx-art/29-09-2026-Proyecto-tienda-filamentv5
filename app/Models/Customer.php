@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use App\Support\BlindIndex;
 use App\Support\Search;
 use Database\Factories\CustomerFactory;
@@ -13,7 +14,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 class Customer extends Authenticatable
 {
     /** @use HasFactory<CustomerFactory> */
-    use HasFactory;
+    use Auditable, HasFactory;
 
     protected $fillable = ['name', 'email', 'phone', 'address', 'city', 'password'];
 
@@ -42,6 +43,14 @@ class Customer extends Authenticatable
             'address' => 'encrypted',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function auditExcludedAttributes(): array
+    {
+        return ['password', 'remember_token', 'phone', 'address', 'phone_hash', 'address_tokens'];
     }
 
     /**

@@ -5,6 +5,7 @@ use App\Http\Controllers\Store\CartController;
 use App\Http\Controllers\Store\CatalogController;
 use App\Http\Controllers\Store\CheckoutController;
 use App\Http\Controllers\Store\OrderController;
+use App\Http\Controllers\Store\PaymentProofController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [CatalogController::class, 'index'])->name('store.index');
@@ -32,4 +33,7 @@ Route::middleware('auth:customer')->group(function () {
 
     Route::get('/mis-pedidos', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/mis-pedidos/{order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::post('/mis-pedidos/{order}/comprobante', [PaymentProofController::class, 'store'])
+        ->middleware('throttle:10,1')
+        ->name('orders.payment-proof.store');
 });

@@ -61,6 +61,28 @@ class StoreNotifier
             ->sendToDatabase($recipients);
     }
 
+    public static function paymentSubmitted(Order $order): void
+    {
+        $recipients = self::usersWithRoles(self::OPERATIONS_ROLES);
+
+        if ($recipients->isEmpty()) {
+            return;
+        }
+
+        Notification::make()
+            ->title('Comprobante recibido: pedido #' . $order->id)
+            ->body('Cliente: ' . ($order->customer?->name ?? '—') . ' · ' . $order->paymentMethodLabel() . ' · ' . Money::format($order->total))
+            ->icon('heroicon-o-document-check')
+            ->iconColor('info')
+            ->actions([
+                Action::make('ver')
+                    ->label('Revisar pago')
+                    ->url(OrderResource::getUrl('view', ['record' => $order], panel: 'admin'))
+                    ->markAsRead(),
+            ])
+            ->sendToDatabase($recipients);
+    }
+
     public static function orderPaid(Order $order): void
     {
         $recipients = self::usersWithRoles(self::ORDER_PAID_ROLES);

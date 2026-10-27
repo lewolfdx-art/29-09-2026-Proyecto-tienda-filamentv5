@@ -28,6 +28,36 @@ class OrderInfolist
                 TextEntry::make('city')
                     ->label('Ciudad')
                     ->placeholder('-'),
+                TextEntry::make('payment_method')
+                    ->label('Método de pago')
+                    ->formatStateUsing(fn (?string $state): ?string => $state
+                        ? (config("payments.methods.{$state}.label") ?? ucfirst($state))
+                        : null)
+                    ->placeholder('-'),
+                TextEntry::make('payment_reference')
+                    ->label('Nº de operación')
+                    ->placeholder('-'),
+                TextEntry::make('payment_submitted_at')
+                    ->label('Comprobante enviado')
+                    ->dateTime()
+                    ->placeholder('-'),
+                TextEntry::make('payment_proof_path')
+                    ->label('Comprobante')
+                    ->formatStateUsing(fn (?string $state): ?string => $state ? 'Ver comprobante' : null)
+                    ->url(fn (\App\Models\Order $record): ?string => $record->paymentProofUrl())
+                    ->openUrlInNewTab()
+                    ->placeholder('-'),
+                TextEntry::make('payment_verified_at')
+                    ->label('Pago verificado')
+                    ->dateTime()
+                    ->placeholder('-'),
+                TextEntry::make('paymentVerifier.name')
+                    ->label('Verificado por')
+                    ->placeholder('-'),
+                TextEntry::make('payment_rejection_reason')
+                    ->label('Motivo de rechazo')
+                    ->placeholder('-')
+                    ->columnSpanFull(),
                 TextEntry::make('notes')
                     ->label('Notas')
                     ->placeholder('-')

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Mail\OrderStatusUpdated;
+use App\Models\Concerns\Auditable;
 use App\Support\StoreNotifier;
 use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,11 +11,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 
 class Order extends Model
 {
     /** @use HasFactory<OrderFactory> */
-    use HasFactory;
+    use Auditable, HasFactory;
 
     public const COMMITTED_STATUSES = ['paid', 'shipped', 'delivered'];
 
@@ -30,6 +32,9 @@ class Order extends Model
     protected $fillable = [
         'customer_id', 'status', 'total', 'notes',
         'phone', 'address', 'city', 'expires_at',
+        'payment_method', 'payment_reference', 'payment_proof_path',
+        'payment_submitted_at', 'payment_verified_at', 'payment_verified_by',
+        'payment_rejection_reason',
     ];
 
     protected static function booted(): void
@@ -64,6 +69,19 @@ class Order extends Model
             $order->notifyStatusChange($previousStatus);
         });
 
+        // Al aprobar un pago dejamos registro de cuándo y quién lo validó.
+        static::updating(function (Order $order) {
+            if (! $order->isDirty('status')) {
+                return;
+            }
+
+            if ($order->status === 'paid' && $order->getOriginal('status') !== 'paid') {
+                $order->payment_verified_at = $order->payment_verified_at ?: now();
+                $order->payment_verified_by = $order->payment_verified_by ?: auth('web')->id();
+                $order->payment_rejection_reason = null;
+            }
+        });
+
         // Si se borra un pedido confirmado, devolvemos su stock antes de que la
         // cascada de la base de datos elimine los artículos sin disparar eventos.
         static::deleting(function (Order $order) {
@@ -80,7 +98,17 @@ class Order extends Model
             'phone' => 'encrypted',
             'address' => 'encrypted',
             'expires_at' => 'datetime',
+            'payment_submitted_at' => 'datetime',
+            'payment_verified_at' => 'datetime',
         ];
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function auditExcludedAttributes(): array
+    {
+        return ['phone', 'address'];
     }
 
     public function statusLabel(): string
@@ -91,6 +119,43 @@ class Order extends Model
     public function statusLabelFor(?string $status): string
     {
         return self::STATUS_LABELS[$status ?? ''] ?? (string) $status;
+    }
+
+    public function paymentMethodLabel(): string
+    {
+        $label = config("payments.methods.{$this->payment_method}.label");
+
+        return $label ?: ($this->payment_method ? ucfirst($this->payment_method) : 'Sin definir');
+    }
+
+    public function paymentProofUrl(): ?string
+    {
+        if (blank($this->payment_proof_path)) {
+            return null;
+        }
+
+        return Storage::disk(config('payments.proof_disk'))->url($this->payment_proof_path);
+    }
+
+    public function paymentProofIsImage(): bool
+    {
+        if (blank($this->payment_proof_path)) {
+            return false;
+        }
+
+        return in_array(strtolower(pathinfo($this->payment_proof_path, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png', 'webp'], true);
+    }
+
+    public function paymentIsUnderReview(): bool
+    {
+        return $this->status === 'pending'
+            && filled($this->payment_submitted_at)
+            && blank($this->payment_rejection_reason);
+    }
+
+    public function paymentWasRejected(): bool
+    {
+        return $this->status === 'pending' && filled($this->payment_rejection_reason);
     }
 
     /**
@@ -124,6 +189,11 @@ class Order extends Model
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function paymentVerifier(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'payment_verified_by');
     }
 
     public function recalculateTotal(): void

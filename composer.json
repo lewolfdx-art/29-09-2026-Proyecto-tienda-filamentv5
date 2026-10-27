@@ -17,6 +17,7 @@
         "leandrocfe/filament-apex-charts": "5.0",
         "pxlrbt/filament-excel": "^4.1",
         "spatie/laravel-activitylog": "^4.12",
+        "spatie/laravel-backup": "^9.3",
         "spatie/laravel-medialibrary": "^11.23",
         "spatie/laravel-settings": "^3.10",
         "stechstudio/filament-impersonate": "^5.6"

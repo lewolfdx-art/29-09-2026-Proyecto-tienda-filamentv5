@@ -10,9 +10,12 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Support\Cart;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
+
 class CheckoutController extends Controller
 {
     /** Horas que se reservan las unidades de un pedido sin pagar. */
@@ -34,6 +37,7 @@ class CheckoutController extends Controller
             'lines' => $lines,
             'total' => Cart::total(),
             'customer' => Auth::guard('customer')->user(),
+            'paymentMethods' => self::enabledPaymentMethods(),
         ]);
     }
 
@@ -42,11 +46,14 @@ class CheckoutController extends Controller
         /** @var Customer $customer */
         $customer = Auth::guard('customer')->user();
 
+        $paymentMethods = self::enabledPaymentMethods();
+
         $data = $request->validate([
             'phone' => ['required', 'string', 'regex:/^[0-9+\-\s()]{6,30}$/'],
             'address' => ['required', 'string', 'max:255'],
             'city' => ['required', 'string', 'max:100'],
             'notes' => ['nullable', 'string', 'max:500'],
+            'payment_method' => ['nullable', 'string', Rule::in($paymentMethods->keys()->all())],
         ], [
             'phone.required' => 'Escribe tu teléfono.',
             'phone.regex' => 'Escribe un teléfono válido (solo números, espacios, + y guiones).',
@@ -60,7 +67,7 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('error', 'Tu carrito está vacío.');
         }
 
-        $result = DB::transaction(function () use ($customer, $data, $items) {
+        $result = DB::transaction(function () use ($customer, $data, $items, $paymentMethods) {
             $ids = array_keys($items);
 
             // 1) Lectura con bloqueo (sin subconsultas) y en orden fijo. Quien compre el
@@ -109,6 +116,7 @@ class CheckoutController extends Controller
                 'address' => $data['address'],
                 'city' => $data['city'],
                 'expires_at' => now()->addHours(self::HOLD_HOURS),
+                'payment_method' => $data['payment_method'] ?? $paymentMethods->keys()->first(),
             ]);
 
             foreach ($items as $id => $quantity) {
@@ -137,6 +145,15 @@ class CheckoutController extends Controller
 
         return redirect()
             ->route('orders.show', $order->id)
-            ->with('status', "¡Pedido #{$order->id} recibido! Tus productos quedan reservados.");
+            ->with('status', "¡Pedido #{$order->id} recibido! Tus productos quedan reservados. Ahora sube tu comprobante de pago.");
+    }
+
+    /**
+     * @return Collection<string, array<string, mixed>>
+     */
+    private static function enabledPaymentMethods(): Collection
+    {
+        return collect(config('payments.methods'))
+            ->filter(fn (array $method): bool => (bool) ($method['enabled'] ?? false));
     }
 }

@@ -7,8 +7,11 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use pxlrbt\FilamentExcel\Actions\ExportAction;
 use pxlrbt\FilamentExcel\Actions\ExportBulkAction;
 use pxlrbt\FilamentExcel\Columns\Column;
@@ -33,6 +36,23 @@ class OrdersTable
                         default => 'gray',
                     })
                     ->searchable(),
+                TextColumn::make('payment_method')
+                    ->label('Pago')
+                    ->badge()
+                    ->formatStateUsing(fn (?string $state): ?string => $state
+                        ? (config("payments.methods.{$state}.label") ?? ucfirst($state))
+                        : null)
+                    ->placeholder('—'),
+                IconColumn::make('payment_proof_path')
+                    ->label('Comprobante')
+                    ->boolean()
+                    ->toggleable(),
+                TextColumn::make('payment_submitted_at')
+                    ->label('Comprobante enviado')
+                    ->dateTime()
+                    ->placeholder('—')
+                    ->sortable()
+                    ->toggleable(),
                 TextColumn::make('total')
                     ->label('Total')
                     ->money('PEN')
@@ -47,7 +67,13 @@ class OrdersTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Filter::make('payment_review')
+                    ->label('Comprobantes por revisar')
+                    ->query(fn (Builder $query): Builder => $query
+                        ->where('status', 'pending')
+                        ->whereNotNull('payment_submitted_at')
+                        ->whereNull('payment_rejection_reason'))
+                    ->toggle(),
             ])
             ->headerActions([
                 ExportAction::make('exportar_bi')

@@ -33,6 +33,8 @@ class OrderController extends Controller
         return view('store.orders.show', [
             'order' => $order,
             'customer' => $customer,
+            'paymentMethods' => collect(config('payments.methods'))
+                ->filter(fn (array $method): bool => (bool) ($method['enabled'] ?? false)),
         ]);
     }
 }

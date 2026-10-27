@@ -1,0 +1,19 @@
+[
+    {
+        "id": 1,
+        "category_id": 1,
+        "name": "Quo Placeat Nostrum",
+        "slug": "quo-placeat-nostrum",
+        "sku": "SKU-9555-QAUA",
+        "description": "Atque eius voluptas atque exercitationem iste.",
+        "price": "350.72",
+        "stock": 2,
+        "image": null,
+        "is_active": true,
+        "created_at": "2026-10-26T15:34:06.000000Z",
+        "updated_at": "2026-10-26T15:34:06.000000Z",
+        "min_stock": 5,
+        "is_featured": false,
+        "deleted_at": null
+    }
+]

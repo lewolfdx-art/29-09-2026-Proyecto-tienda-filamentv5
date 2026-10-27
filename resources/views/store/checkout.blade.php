@@ -34,6 +34,28 @@
                        class="w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-2 text-white focus:border-cyan-300/50 focus:outline-none">
             </div>
 
+            @if ($paymentMethods->isNotEmpty())
+                <div>
+                    <p class="mb-2 block text-sm text-slate-300">¿Cómo pagarás?</p>
+                    <div class="grid gap-2 sm:grid-cols-2">
+                        @foreach ($paymentMethods as $key => $method)
+                            <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-slate-900 p-3 hover:border-cyan-300/40">
+                                <input type="radio" name="payment_method" value="{{ $key }}"
+                                       @checked(old('payment_method', $paymentMethods->keys()->first()) === $key)
+                                       class="mt-1 accent-cyan-300">
+                                <span>
+                                    <span class="block font-semibold text-white">{{ $method['label'] }}</span>
+                                    <span class="block text-xs text-slate-400">{{ $method['instructions'] }}</span>
+                                </span>
+                            </label>
+                        @endforeach
+                    </div>
+                    @error('payment_method')
+                        <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
+                    @enderror
+                </div>
+            @endif
+
             <div>
                 <label for="notes" class="mb-1 block text-sm text-slate-300">Notas del pedido (opcional)</label>
                 <textarea id="notes" name="notes" rows="3" maxlength="500"
@@ -66,7 +88,7 @@
             </div>
 
             <p class="mt-4 text-xs text-slate-400">
-                Al confirmar, reservamos tus productos por 24 horas. Después te contactaremos con las instrucciones de pago.
+                Al confirmar, reservamos tus productos por 24 horas. Luego paga con Yape o Plin y sube tu comprobante en la página del pedido.
             </p>
         </aside>
     </div>

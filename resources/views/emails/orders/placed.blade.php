@@ -5,6 +5,7 @@ Hemos recibido tu pedido **#{{ $order->id }}**.
 
 <x-mail::panel>
 **Total:** {{ \App\Support\Money::format($order->total) }}  
+**Método de pago:** {{ $order->paymentMethodLabel() }}  
 **Estado:** {{ $order->statusLabel() }}  
 **Fecha:** {{ $order->created_at->format('d/m/Y H:i') }}
 </x-mail::panel>
@@ -15,7 +16,7 @@ Hemos recibido tu pedido **#{{ $order->id }}**.
 - {{ $item->quantity }} x {{ $item->product?->name }} — {{ \App\Support\Money::format($item->quantity * $item->unit_price) }}
 @endforeach
 
-Tus productos quedan reservados por {{ config('app.name') }} hasta que se confirme el pago. Si tienes alguna pregunta, responde a este correo.
+Tus productos quedan reservados por {{ config('app.name') }}. Paga el monto exacto con Yape o Plin y sube tu comprobante desde el botón. Si tienes alguna pregunta, responde a este correo.
 
 <x-mail::button :url="route('orders.show', $order)">
 Ver mi pedido
