@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Products\Tables;
 
 use App\Models\Product;
+use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
@@ -18,6 +19,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use pxlrbt\FilamentExcel\Actions\ExportAction;
 use pxlrbt\FilamentExcel\Actions\ExportBulkAction;
@@ -26,6 +28,14 @@ use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 class ProductsTable
 {
+    protected static function canUpdate(Model $record): bool
+    {
+        /** @var User|null $user */
+        $user = Filament::auth()->user();
+
+        return $user?->can('update', $record) ?? false;
+    }
+
     public static function configure(Table $table): Table
     {
         return $table
@@ -65,7 +75,7 @@ class ProductsTable
                     ->boolean(),
                 ToggleColumn::make('is_featured')
                     ->label('Destacado')
-                    ->disabled(fn (Product $record) => ! (Filament::auth()->user()?->can('update', $record) ?? false)),
+                    ->disabled(fn (Product $record) => ! self::canUpdate($record)),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -121,7 +131,7 @@ class ProductsTable
                     ->label(fn (Product $record) => $record->is_active ? 'Ocultar' : 'Mostrar')
                     ->icon(fn (Product $record) => $record->is_active ? Heroicon::OutlinedEyeSlash : Heroicon::OutlinedEye)
                     ->color(fn (Product $record) => $record->is_active ? 'warning' : 'success')
-                    ->visible(fn (Product $record) => Filament::auth()->user()?->can('update', $record) ?? false)
+                    ->visible(fn (Product $record) => self::canUpdate($record))
                     ->requiresConfirmation()
                     ->action(fn (Product $record) => $record->update(['is_active' => ! $record->is_active])),
             ])
@@ -133,7 +143,7 @@ class ProductsTable
                         ->label('Ocultar seleccionados')
                         ->icon(Heroicon::OutlinedEyeSlash)
                         ->color('warning')
-                        ->visible(fn () => Filament::auth()->user()?->can('update', new Product) ?? false)
+                        ->visible(fn () => self::canUpdate(new Product))
                         ->requiresConfirmation()
                         ->action(fn (Collection $records) => $records->each->update(['is_active' => false]))
                         ->deselectRecordsAfterCompletion(),
@@ -141,7 +151,7 @@ class ProductsTable
                         ->label('Mostrar seleccionados')
                         ->icon(Heroicon::OutlinedEye)
                         ->color('success')
-                        ->visible(fn () => Filament::auth()->user()?->can('update', new Product) ?? false)
+                        ->visible(fn () => self::canUpdate(new Product))
                         ->action(fn (Collection $records) => $records->each->update(['is_active' => true]))
                         ->deselectRecordsAfterCompletion(),
                 ]),
