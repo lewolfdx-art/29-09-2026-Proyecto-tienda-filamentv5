@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Activitylog\Models\Activity;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class AuditLogTest extends TestCase
@@ -16,11 +17,14 @@ class AuditLogTest extends TestCase
 
     public function test_the_audit_log_page_can_be_rendered(): void
     {
-        $this->actingAs(User::factory()->create());
+        $user = User::factory()->create();
+        $user->roles()->attach(Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']));
+
+        $this->actingAs($user);
 
         $this->get(route('filament.admin.resources.activity-logs.index'))
             ->assertOk()
-            ->assertSee('Auditoría');
+            ->assertSee('Registro de actividad');
     }
 
     public function test_creating_and_updating_a_product_is_logged(): void

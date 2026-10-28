@@ -16,12 +16,12 @@ class StoreStatsOverview extends StatsOverviewWidget
 {
     use HasWidgetShield;
 
-    
     protected static ?int $sort = 0;
 
     protected static bool $isLazy = true;
 
     protected ?string $pollingInterval = null;
+
     protected function getStats(): array
     {
         $now = now();
@@ -90,8 +90,8 @@ class StoreStatsOverview extends StatsOverviewWidget
         $percent = round($percent);
 
         [$text, $icon, $color] = match (true) {
-            $percent > 0 => [abs($percent) . '% de aumento', 'heroicon-m-arrow-trending-up', 'success'],
-            $percent < 0 => [abs($percent) . '% de disminución', 'heroicon-m-arrow-trending-down', 'danger'],
+            $percent > 0 => [abs($percent).'% de aumento', 'heroicon-m-arrow-trending-up', 'success'],
+            $percent < 0 => [abs($percent).'% de disminución', 'heroicon-m-arrow-trending-down', 'danger'],
             default => ['Sin cambios', 'heroicon-m-minus', 'gray'],
         };
 

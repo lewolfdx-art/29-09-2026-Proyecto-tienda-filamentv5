@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Orders\Schemas;
 
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -37,6 +38,16 @@ class OrderForm
                     ->default(0)
                     ->disabled()
                     ->dehydrated(false),
+                TextInput::make('phone')
+                    ->label('Teléfono')
+                    ->tel(),
+                TextInput::make('address')
+                    ->label('Dirección'),
+                TextInput::make('city')
+                    ->label('Ciudad'),
+                DateTimePicker::make('expires_at')
+                    ->label('Caduca')
+                    ->seconds(false),
                 Textarea::make('notes')
                     ->label('Notas')
                     ->columnSpanFull(),

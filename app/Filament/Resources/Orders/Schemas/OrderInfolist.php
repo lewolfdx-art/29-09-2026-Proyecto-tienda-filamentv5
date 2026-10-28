@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Orders\Schemas;
 
+use App\Models\Order;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
 
@@ -15,7 +16,7 @@ class OrderInfolist
                     ->label('Cliente'),
                 TextEntry::make('status')
                     ->label('Estado')
-                    ->formatStateUsing(fn (string $state): string => \App\Models\Order::STATUS_LABELS[$state] ?? $state),
+                    ->formatStateUsing(fn (string $state): string => Order::STATUS_LABELS[$state] ?? $state),
                 TextEntry::make('total')
                     ->label('Total')
                     ->money('PEN'),
@@ -44,7 +45,7 @@ class OrderInfolist
                 TextEntry::make('payment_proof_path')
                     ->label('Comprobante')
                     ->formatStateUsing(fn (?string $state): ?string => $state ? 'Ver comprobante' : null)
-                    ->url(fn (\App\Models\Order $record): ?string => $record->paymentProofUrl())
+                    ->url(fn (Order $record): ?string => $record->paymentProofUrl())
                     ->openUrlInNewTab()
                     ->placeholder('-'),
                 TextEntry::make('payment_verified_at')

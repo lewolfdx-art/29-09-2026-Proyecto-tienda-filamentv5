@@ -27,8 +27,5 @@ class AppServiceProvider extends ServiceProvider
         // Al cerrar sesión en el panel, el equipo vuelve a la tienda.
         $this->app->bind(LogoutResponseContract::class, LogoutResponse::class);
 
-
-
-
     }
 }

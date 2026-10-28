@@ -48,7 +48,7 @@ class StoreNotifier
         $soldOut = $product->stock <= 0;
 
         Notification::make()
-            ->title(($soldOut ? 'Producto agotado: ' : 'Stock bajo: ') . $product->name)
+            ->title(($soldOut ? 'Producto agotado: ' : 'Stock bajo: ').$product->name)
             ->body("Quedan {$product->stock} unidades (mínimo {$product->min_stock}).")
             ->icon('heroicon-o-exclamation-triangle')
             ->iconColor($soldOut ? 'danger' : 'warning')
@@ -70,8 +70,8 @@ class StoreNotifier
         }
 
         Notification::make()
-            ->title('Comprobante recibido: pedido #' . $order->id)
-            ->body('Cliente: ' . ($order->customer?->name ?? '—') . ' · ' . $order->paymentMethodLabel() . ' · ' . Money::format($order->total))
+            ->title('Comprobante recibido: pedido #'.$order->id)
+            ->body('Cliente: '.($order->customer?->name ?? '—').' · '.$order->paymentMethodLabel().' · '.Money::format($order->total))
             ->icon('heroicon-o-document-check')
             ->iconColor('info')
             ->actions([
@@ -92,8 +92,8 @@ class StoreNotifier
         }
 
         Notification::make()
-            ->title('Pedido #' . $order->id . ' pagado')
-            ->body('Cliente: ' . ($order->customer?->name ?? '—') . ' · Total: ' . Money::format($order->total))
+            ->title('Pedido #'.$order->id.' pagado')
+            ->body('Cliente: '.($order->customer?->name ?? '—').' · Total: '.Money::format($order->total))
             ->icon('heroicon-o-banknotes')
             ->iconColor('success')
             ->actions([

@@ -24,11 +24,16 @@ class ActivityLogResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'description';
 
-    protected static ?string $navigationLabel = 'Auditoría';
+    protected static ?string $navigationLabel = 'Registro de actividad';
 
     protected static ?string $modelLabel = 'evento';
 
     protected static ?string $pluralModelLabel = 'eventos';
+
+    public static function getNavigationLabel(): string
+    {
+        return 'Registro de actividad';
+    }
 
     public static function table(Table $table): Table
     {

@@ -14,9 +14,7 @@ class OrderStatusUpdated extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public Order $order, public string $previousStatus)
-    {
-    }
+    public function __construct(public Order $order, public string $previousStatus) {}
 
     public function envelope(): Envelope
     {

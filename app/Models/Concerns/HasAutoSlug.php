@@ -20,7 +20,7 @@ trait HasAutoSlug
         $counter = 2;
 
         while (static::where('slug', $slug)->exists()) {
-            $slug = $base . '-' . $counter++;
+            $slug = $base.'-'.$counter++;
         }
 
         return $slug;

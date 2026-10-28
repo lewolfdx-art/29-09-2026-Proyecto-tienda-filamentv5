@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Customer;
+use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -26,7 +27,7 @@ class OrderShippingSnapshotTest extends TestCase
 
         $response->assertRedirect();
 
-        $order = \App\Models\Order::first();
+        $order = Order::first();
 
         $this->assertSame($customer->id, $order->customer_id);
         $this->assertSame('+51 999 111 222', $order->phone);

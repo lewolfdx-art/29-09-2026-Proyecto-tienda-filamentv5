@@ -32,6 +32,11 @@ class CustomerResource extends Resource
 
     protected static ?string $pluralModelLabel = 'clientes';
 
+    public static function getNavigationLabel(): string
+    {
+        return 'Clientes';
+    }
+
     protected static ?string $recordTitleAttribute = 'name';
 
     public static function form(Schema $schema): Schema

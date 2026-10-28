@@ -14,9 +14,7 @@ class PaymentRejected extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public Order $order, public string $reason)
-    {
-    }
+    public function __construct(public Order $order, public string $reason) {}
 
     public function envelope(): Envelope
     {

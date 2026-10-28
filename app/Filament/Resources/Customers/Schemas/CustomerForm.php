@@ -12,14 +12,25 @@ class CustomerForm
         return $schema
             ->components([
                 TextInput::make('name')
+                    ->label('Nombre')
                     ->required(),
                 TextInput::make('email')
-                    ->label('Email address')
-                    ->email(),
+                    ->label('Correo electrónico')
+                    ->email()
+                    ->unique(ignoreRecord: true),
+                TextInput::make('password')
+                    ->label('Contraseña')
+                    ->password()
+                    ->revealable()
+                    ->dehydrated(fn ($state): bool => filled($state))
+                    ->required(fn (string $operation): bool => $operation === 'create'),
                 TextInput::make('phone')
+                    ->label('Teléfono')
                     ->tel(),
-                TextInput::make('address'),
-                TextInput::make('city'),
+                TextInput::make('address')
+                    ->label('Dirección'),
+                TextInput::make('city')
+                    ->label('Ciudad'),
             ]);
     }
 }

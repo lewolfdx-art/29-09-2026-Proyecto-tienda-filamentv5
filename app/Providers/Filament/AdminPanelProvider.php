@@ -2,7 +2,6 @@
 
 namespace App\Providers\Filament;
 
-use Awcodes\QuickCreate\QuickCreatePlugin;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Actions\Action;
 use Filament\Enums\ThemeMode;
@@ -32,6 +31,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->brandName('Tienda Admin')
             ->colors([
                 'primary' => Color::Cyan,
             ])
@@ -71,9 +71,9 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-    ->plugins([
-        FilamentShieldPlugin::make(),
-        FilamentApexChartsPlugin::make(),
-    ]);
+            ->plugins([
+                FilamentShieldPlugin::make(),
+                FilamentApexChartsPlugin::make(),
+            ]);
     }
 }
