@@ -6,7 +6,7 @@
 @section('title', 'Pedido #' . $order->id . ' — ' . config('app.name'))
 
 @section('content')
-    <a href="{{ route('orders.index') }}" class="mb-6 inline-block text-sm text-cyan-200 hover:underline">← Mis pedidos</a>
+    <a href="{{ route('orders.index') }}" class="mb-6 inline-block text-sm text-cyan-200 hover:underline">Mis pedidos</a>
 
     @php
         $selectedMethod = $order->payment_method && $paymentMethods->has($order->payment_method)
