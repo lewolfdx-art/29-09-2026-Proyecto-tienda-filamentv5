@@ -47,7 +47,7 @@ class PaymentProofTest extends TestCase
 
     public function test_a_customer_can_upload_a_payment_proof(): void
     {
-        Storage::fake('public');
+        Storage::fake('local');
 
         $customer = Customer::factory()->create();
         $order = $this->orderFor($customer);
@@ -69,12 +69,12 @@ class PaymentProofTest extends TestCase
         $this->assertNull($order->payment_rejection_reason);
         $this->assertSame('pending', $order->status);
         $this->assertTrue($order->paymentIsUnderReview());
-        Storage::disk('public')->assertExists($order->payment_proof_path);
+        Storage::disk('local')->assertExists($order->payment_proof_path);
     }
 
     public function test_a_customer_cannot_upload_a_proof_to_another_customers_order(): void
     {
-        Storage::fake('public');
+        Storage::fake('local');
 
         $owner = Customer::factory()->create();
         $intruder = Customer::factory()->create();
@@ -93,7 +93,7 @@ class PaymentProofTest extends TestCase
 
     public function test_a_proof_cannot_be_uploaded_to_a_paid_or_expired_order(): void
     {
-        Storage::fake('public');
+        Storage::fake('local');
 
         $customer = Customer::factory()->create();
         $paid = $this->orderFor($customer, ['status' => 'paid']);
@@ -114,7 +114,7 @@ class PaymentProofTest extends TestCase
 
     public function test_only_images_and_pdfs_are_accepted_as_proof(): void
     {
-        Storage::fake('public');
+        Storage::fake('local');
 
         $customer = Customer::factory()->create();
         $order = $this->orderFor($customer);
@@ -132,7 +132,7 @@ class PaymentProofTest extends TestCase
 
     public function test_replacing_a_proof_deletes_the_previous_file_and_clears_a_rejection(): void
     {
-        Storage::fake('public');
+        Storage::fake('local');
 
         $customer = Customer::factory()->create();
         $order = $this->orderFor($customer, [
@@ -146,7 +146,7 @@ class PaymentProofTest extends TestCase
         ]);
 
         $firstPath = $order->fresh()->payment_proof_path;
-        Storage::disk('public')->assertExists($firstPath);
+        Storage::disk('local')->assertExists($firstPath);
 
         $this->actingAs($customer, 'customer')->post(route('orders.payment-proof.store', $order), [
             'payment_method' => 'plin',
@@ -156,11 +156,29 @@ class PaymentProofTest extends TestCase
 
         $order->refresh();
 
-        Storage::disk('public')->assertMissing($firstPath);
-        Storage::disk('public')->assertExists($order->payment_proof_path);
+        Storage::disk('local')->assertMissing($firstPath);
+        Storage::disk('local')->assertExists($order->payment_proof_path);
         $this->assertSame('plin', $order->payment_method);
         $this->assertSame('OP-222222', $order->payment_reference);
         $this->assertNull($order->payment_rejection_reason);
+    }
+
+    public function test_payment_proof_links_are_temporary(): void
+    {
+        Storage::fake('local');
+
+        $customer = Customer::factory()->create();
+        $order = $this->orderFor($customer, [
+            'payment_proof_path' => 'payment-proofs/comprobante.jpg',
+            'payment_submitted_at' => now(),
+        ]);
+
+        Storage::disk('local')->put('payment-proofs/comprobante.jpg', 'contenido');
+
+        $url = $order->paymentProofUrl();
+
+        $this->assertNotNull($url);
+        $this->assertStringContainsString('expiration=', $url);
     }
 
     public function test_approving_payment_records_who_verified_it_and_discounts_stock(): void

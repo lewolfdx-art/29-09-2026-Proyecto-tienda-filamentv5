@@ -151,6 +151,7 @@ class ActivityLogResource extends Resource
             'Customer' => 'Cliente',
             'Order' => 'Pedido',
             'OrderItem' => 'Artículo de pedido',
+            'EmailRecipient' => 'Destinatario de correo',
             'User' => 'Usuario',
             default => class_basename($type),
         };

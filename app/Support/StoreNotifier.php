@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Filament\Resources\Orders\OrderResource;
 use App\Filament\Resources\Products\ProductResource;
+use App\Models\EmailRecipient;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
@@ -39,13 +40,21 @@ class StoreNotifier
 
     public static function lowStock(Product $product): void
     {
+        $soldOut = $product->stock <= 0;
+
+        InternalNotifier::send(
+            EmailRecipient::TYPE_LOW_STOCK,
+            ($soldOut ? 'Producto agotado: ' : 'Stock bajo: ').$product->name,
+            "Quedan {$product->stock} unidades (mínimo {$product->min_stock}).",
+            ProductResource::getUrl('edit', ['record' => $product], panel: 'admin'),
+            'Ver producto',
+        );
+
         $recipients = self::usersWithRoles(self::OPERATIONS_ROLES);
 
         if ($recipients->isEmpty()) {
             return;
         }
-
-        $soldOut = $product->stock <= 0;
 
         Notification::make()
             ->title(($soldOut ? 'Producto agotado: ' : 'Stock bajo: ').$product->name)
@@ -61,8 +70,30 @@ class StoreNotifier
             ->sendToDatabase($recipients);
     }
 
+    public static function orderPlaced(Order $order): void
+    {
+        InternalNotifier::send(
+            EmailRecipient::TYPE_NEW_ORDER,
+            'Nuevo pedido #'.$order->id,
+            'Cliente: '.($order->customer?->name ?? 'Sin cliente')
+                .' — Total: '.Money::format($order->total),
+            OrderResource::getUrl('view', ['record' => $order], panel: 'admin'),
+            'Ver pedido',
+        );
+    }
+
     public static function paymentSubmitted(Order $order): void
     {
+        InternalNotifier::send(
+            EmailRecipient::TYPE_PAYMENT_PROOF,
+            'Comprobante recibido: pedido #'.$order->id,
+            'Cliente: '.($order->customer?->name ?? 'Sin cliente')
+                .' — '.$order->paymentMethodLabel()
+                .' — '.Money::format($order->total),
+            OrderResource::getUrl('view', ['record' => $order], panel: 'admin'),
+            'Revisar pago',
+        );
+
         $recipients = self::usersWithRoles(self::OPERATIONS_ROLES);
 
         if ($recipients->isEmpty()) {
@@ -71,7 +102,7 @@ class StoreNotifier
 
         Notification::make()
             ->title('Comprobante recibido: pedido #'.$order->id)
-            ->body('Cliente: '.($order->customer?->name ?? '—').' · '.$order->paymentMethodLabel().' · '.Money::format($order->total))
+            ->body('Cliente: '.$order->customer->name.' · '.$order->paymentMethodLabel().' · '.Money::format($order->total))
             ->icon('heroicon-o-document-check')
             ->iconColor('info')
             ->actions([
@@ -93,7 +124,7 @@ class StoreNotifier
 
         Notification::make()
             ->title('Pedido #'.$order->id.' pagado')
-            ->body('Cliente: '.($order->customer?->name ?? '—').' · Total: '.Money::format($order->total))
+            ->body('Cliente: '.$order->customer->name.' · Total: '.Money::format($order->total))
             ->icon('heroicon-o-banknotes')
             ->iconColor('success')
             ->actions([

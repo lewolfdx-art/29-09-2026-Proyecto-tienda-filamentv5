@@ -6,15 +6,32 @@ use App\Models\Concerns\Auditable;
 use App\Support\BlindIndex;
 use App\Support\Search;
 use Database\Factories\CustomerFactory;
+use Illuminate\Auth\Passwords\CanResetPassword;
+use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
-class Customer extends Authenticatable
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $email
+ * @property string|null $phone
+ * @property string|null $address
+ * @property string|null $city
+ * @property string|null $phone_hash
+ * @property string|null $address_tokens
+ * @property-read Collection<int, Order> $orders
+ *
+ * @method static Builder<static> search(?string $search)
+ */
+class Customer extends Authenticatable implements CanResetPasswordContract
 {
     /** @use HasFactory<CustomerFactory> */
-    use Auditable, HasFactory;
+    use Auditable, CanResetPassword, HasFactory, Notifiable;
 
     protected $fillable = ['name', 'email', 'phone', 'address', 'city', 'password'];
 
@@ -97,6 +114,9 @@ class Customer extends Authenticatable
         });
     }
 
+    /**
+     * @return HasMany<Order, $this>
+     */
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);

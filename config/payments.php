@@ -36,9 +36,14 @@ return [
         ],
     ],
 
-    'proof_disk' => 'public',
+    // Los comprobantes contienen datos sensibles: se guardan en el disco
+    // privado y solo se sirven mediante URLs temporales firmadas.
+    'proof_disk' => env('PAYMENT_PROOF_DISK', 'local'),
 
     'proof_directory' => 'payment-proofs',
+
+    // Minutos que vive el enlace firmado para ver un comprobante.
+    'proof_url_ttl' => (int) env('PAYMENT_PROOF_URL_TTL', 15),
 
     'max_proof_kb' => 4096,
 

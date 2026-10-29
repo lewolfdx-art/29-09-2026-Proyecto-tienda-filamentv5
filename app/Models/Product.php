@@ -17,6 +17,32 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
+/**
+ * @property int $id
+ * @property int|null $category_id
+ * @property string $name
+ * @property string $slug
+ * @property string|null $sku
+ * @property string|null $description
+ * @property string $price
+ * @property int $stock
+ * @property int $min_stock
+ * @property string|null $image
+ * @property bool $is_active
+ * @property bool $is_featured
+ * @property-read int $available_stock
+ * @property-read string|null $cover_url
+ * @property-read string|null $cover_thumb_url
+ * @property-read array<int, string> $gallery_urls
+ * @property-read Category|null $category
+ *
+ * @method static Builder<static> search(?string $term)
+ * @method static Builder<static> active()
+ * @method static Builder<static> featured()
+ * @method static Builder<static> lowStock()
+ * @method static Builder<static> visibleInStore()
+ * @method static Builder<static> withReserved()
+ */
 class Product extends Model implements HasMedia
 {
     /** @use HasFactory<ProductFactory> */
@@ -214,6 +240,9 @@ class Product extends Model implements HasMedia
         ]);
     }
 
+    /**
+     * @return BelongsTo<Category, $this>
+     */
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);

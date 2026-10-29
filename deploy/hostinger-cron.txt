@@ -1,0 +1,5 @@
+# Reemplaza USUARIO, DOMINIO y la ruta de PHP antes de pegar esto en hPanel > Cron Jobs.
+# Ambos trabajos deben ejecutarse cada minuto.
+
+* * * * * cd /home/USUARIO/domains/DOMINIO/public_html && /usr/bin/php artisan schedule:run >> /dev/null 2>&1
+* * * * * cd /home/USUARIO/domains/DOMINIO/public_html && /usr/bin/php artisan queue:work --stop-when-empty --max-time=50 --tries=3 --timeout=60 >> storage/logs/queue.log 2>&1

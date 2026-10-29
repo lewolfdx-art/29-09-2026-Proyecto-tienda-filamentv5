@@ -27,6 +27,7 @@ return [
                  */
                 'include' => array_values(array_filter([
                     storage_path('app/public'),
+                    storage_path('app/private'),
                     // El .env solo se incluye si el archivo va cifrado.
                     env('BACKUP_ARCHIVE_PASSWORD') ? base_path('.env') : null,
                 ])),
@@ -214,12 +215,12 @@ return [
      */
     'notifications' => [
         'notifications' => [
-            BackupHasFailedNotification::class => ['mail'],
-            UnhealthyBackupWasFoundNotification::class => ['mail'],
-            CleanupHasFailedNotification::class => ['mail'],
-            BackupWasSuccessfulNotification::class => ['mail'],
-            HealthyBackupWasFoundNotification::class => ['mail'],
-            CleanupWasSuccessfulNotification::class => ['mail'],
+            BackupHasFailedNotification::class => [],
+            UnhealthyBackupWasFoundNotification::class => [],
+            CleanupHasFailedNotification::class => [],
+            BackupWasSuccessfulNotification::class => [],
+            HealthyBackupWasFoundNotification::class => [],
+            CleanupWasSuccessfulNotification::class => [],
         ],
 
         /*

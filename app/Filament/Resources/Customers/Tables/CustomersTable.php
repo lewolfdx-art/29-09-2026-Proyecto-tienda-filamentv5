@@ -49,7 +49,7 @@ class CustomersTable
             // un LIKE sobre la columna. La búsqueda global usa el índice ciego
             // que mantiene el modelo (ver Customer::scopeSearch).
             ->searchUsing(function (Builder $query, string $search): void {
-                $query->search($search);
+                $query->whereIn('customers.id', Customer::query()->search($search)->select('customers.id'));
             })
             ->filters([
                 //

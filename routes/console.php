@@ -15,6 +15,7 @@ Schedule::command('orders:expire')->everyFiveMinutes()->withoutOverlapping();
 Schedule::command('backup:run')->dailyAt('02:00')->withoutOverlapping();
 Schedule::command('backup:clean')->dailyAt('02:30')->withoutOverlapping();
 Schedule::command('backup:monitor')->dailyAt('03:00')->withoutOverlapping();
+Schedule::command('app:send-backup-emails')->dailyAt('03:15')->withoutOverlapping();
 
 // Poda el registro de auditoría según config/activitylog.php.
 Schedule::command('activitylog:clean --force')->monthlyOn(1, '03:30')->withoutOverlapping();

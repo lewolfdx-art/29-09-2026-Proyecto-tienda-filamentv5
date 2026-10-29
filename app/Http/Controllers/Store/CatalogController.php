@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Store;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
 class CatalogController extends Controller
@@ -27,8 +28,8 @@ class CatalogController extends Controller
             ->search($search)
             ->when($categorySlug !== '', fn ($query) => $query
                 ->whereHas('category', fn ($q) => $q->where('slug', $categorySlug)))
-            ->when(is_numeric($minPrice) && $minPrice !== '', fn ($q) => $q->where('products.price', '>=', (float) $minPrice))
-            ->when(is_numeric($maxPrice) && $maxPrice !== '', fn ($q) => $q->where('products.price', '<=', (float) $maxPrice))
+            ->when(is_numeric($minPrice), fn ($q) => $q->where('products.price', '>=', (float) $minPrice))
+            ->when(is_numeric($maxPrice), fn ($q) => $q->where('products.price', '<=', (float) $maxPrice))
             ->when($availableOnly, function ($q) {
                 $q->whereRaw('(SELECT COALESCE(SUM(order_items.quantity), 0) FROM order_items INNER JOIN orders ON orders.id = order_items.order_id WHERE orders.status = ? AND (orders.expires_at IS NULL OR orders.expires_at > ?) AND order_items.product_id = products.id) < products.stock', ['pending', now()]);
             })
@@ -40,7 +41,7 @@ class CatalogController extends Controller
             ->withQueryString();
 
         $categories = Category::active()
-            ->whereHas('products', fn ($q) => $q->visibleInStore())
+            ->whereHas('products', fn (Builder $q) => $q->visibleInStore())
             ->orderBy('name')
             ->get();
 

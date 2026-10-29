@@ -6,13 +6,39 @@ use App\Mail\OrderStatusUpdated;
 use App\Models\Concerns\Auditable;
 use App\Support\StoreNotifier;
 use Database\Factories\OrderFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * @property int $id
+ * @property int $customer_id
+ * @property string $status
+ * @property string $total
+ * @property string|null $notes
+ * @property string|null $phone
+ * @property string|null $address
+ * @property string|null $city
+ * @property Carbon|null $expires_at
+ * @property string|null $payment_method
+ * @property string|null $payment_reference
+ * @property string|null $payment_proof_path
+ * @property Carbon|null $payment_submitted_at
+ * @property Carbon|null $payment_verified_at
+ * @property int|null $payment_verified_by
+ * @property string|null $payment_rejection_reason
+ * @property-read Customer|null $customer
+ * @property-read Collection<int, OrderItem> $items
+ * @property-read User|null $paymentVerifier
+ * @property-read int $dow
+ * @property-read int $hour
+ */
 class Order extends Model
 {
     /** @use HasFactory<OrderFactory> */
@@ -40,8 +66,10 @@ class Order extends Model
     protected static function booted(): void
     {
         static::created(function (Order $order) {
-            // Un pedido creado ya pagado avisa al equipo, pero todavía no tiene
-            // artículos: el stock se descuenta cuando se añadan (ver OrderItem).
+            StoreNotifier::orderPlaced($order);
+
+            // Un pedido creado ya pagado avisa al equipo, pero todav��a no tiene
+            // art��culos: el stock se descuenta cuando se a��adan (ver OrderItem).
             if ($order->status === 'paid') {
                 StoreNotifier::orderPaid($order);
             }
@@ -134,7 +162,16 @@ class Order extends Model
             return null;
         }
 
-        return Storage::disk(config('payments.proof_disk'))->url($this->payment_proof_path);
+        $disk = Storage::disk(config('payments.proof_disk'));
+
+        if (! $disk->providesTemporaryUrls()) {
+            return $disk->url($this->payment_proof_path);
+        }
+
+        return $disk->temporaryUrl(
+            $this->payment_proof_path,
+            now()->addMinutes((int) config('payments.proof_url_ttl', 15)),
+        );
     }
 
     public function paymentProofIsImage(): bool
@@ -181,16 +218,25 @@ class Order extends Model
         return in_array($this->status, self::COMMITTED_STATUSES, true);
     }
 
+    /**
+     * @return BelongsTo<Customer, $this>
+     */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
+    /**
+     * @return HasMany<OrderItem, $this>
+     */
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function paymentVerifier(): BelongsTo
     {
         return $this->belongsTo(User::class, 'payment_verified_by');
@@ -199,7 +245,7 @@ class Order extends Model
     public function recalculateTotal(): void
     {
         $this->update([
-            'total' => $this->items()->get()->sum(fn ($item) => $item->quantity * $item->unit_price),
+            'total' => $this->items()->get()->sum(fn (OrderItem $item) => $item->quantity * (float) $item->unit_price),
         ]);
     }
 
@@ -208,9 +254,11 @@ class Order extends Model
      */
     public function adjustStock(int $direction): void
     {
-        foreach ($this->items()->get() as $item) {
-            $this->adjustStockBy($item, $direction * (int) $item->quantity);
-        }
+        DB::transaction(function () use ($direction) {
+            foreach ($this->items()->get() as $item) {
+                $this->adjustStockBy($item, $direction * (int) $item->quantity);
+            }
+        });
     }
 
     /**
@@ -222,20 +270,37 @@ class Order extends Model
      */
     public function adjustStockBy(OrderItem $item, int $delta): void
     {
-        $product = Product::find($item->product_id);
-
-        if (! $product || $delta === 0) {
+        if ($delta === 0) {
             return;
         }
 
-        $before = (int) $product->stock;
-        $after = max(0, $before + $delta);
+        $result = DB::transaction(function () use ($item, $delta): ?array {
+            $product = Product::query()
+                ->whereKey($item->product_id)
+                ->lockForUpdate()
+                ->first();
 
-        if ($after === $before) {
+            if (! $product) {
+                return null;
+            }
+
+            $before = (int) $product->stock;
+            $after = max(0, $before + $delta);
+
+            if ($after === $before) {
+                return null;
+            }
+
+            Product::whereKey($product->id)->update(['stock' => $after]);
+
+            return [$product, $before, $after];
+        });
+
+        if ($result === null) {
             return;
         }
 
-        Product::where('id', $product->id)->update(['stock' => $after]);
+        [$product, $before, $after] = $result;
 
         if ($delta < 0 && StoreNotifier::crossedLowStock($before, $after, (int) $product->min_stock)) {
             StoreNotifier::lowStock($product);

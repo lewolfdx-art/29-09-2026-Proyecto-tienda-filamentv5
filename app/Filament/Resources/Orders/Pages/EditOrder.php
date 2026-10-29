@@ -8,6 +8,9 @@ use Filament\Actions\ViewAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
+/**
+ * @extends EditRecord<Order>
+ */
 class EditOrder extends EditRecord
 {
     protected static string $resource = OrderResource::class;

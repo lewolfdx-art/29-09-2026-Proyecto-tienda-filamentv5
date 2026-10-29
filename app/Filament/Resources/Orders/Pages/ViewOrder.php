@@ -12,6 +12,9 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Illuminate\Support\Facades\Mail;
 
+/**
+ * @extends ViewRecord<Order>
+ */
 class ViewOrder extends ViewRecord
 {
     protected static string $resource = OrderResource::class;

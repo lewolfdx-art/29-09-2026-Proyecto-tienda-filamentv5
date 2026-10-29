@@ -50,6 +50,7 @@ trait Auditable
             'Customer' => 'cliente',
             'Order' => 'pedido',
             'OrderItem' => 'artículo de pedido',
+            'EmailRecipient' => 'destinatario de correo',
             'User' => 'usuario',
             default => 'registro',
         };
