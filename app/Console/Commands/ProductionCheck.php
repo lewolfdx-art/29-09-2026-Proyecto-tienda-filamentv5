@@ -18,6 +18,7 @@ class ProductionCheck extends Command
             ['APP_ENV=production', app()->environment('production'), 'Configura APP_ENV=production en el .env del servidor.'],
             ['APP_DEBUG=false', config('app.debug') === false, 'Desactiva APP_DEBUG para no exponer trazas.'],
             ['APP_KEY definida', filled(config('app.key')), 'Ejecuta php artisan key:generate.'],
+            ['.env sin valores de plantilla', ! $this->envHasPlaceholders(), 'Sustituye los valores CAMBIAR que quedan en el .env.'],
             ['APP_URL con HTTPS', str_starts_with((string) config('app.url'), 'https://'), 'Usa https://tu-dominio.com en APP_URL.'],
             ['APP_URL no es local', ! $this->isLocalUrl((string) config('app.url')), 'Sustituye localhost/127.0.0.1 por tu dominio real.'],
             ['Base de datos MySQL', config('database.default') === 'mysql', 'Configura DB_CONNECTION=mysql.'],
@@ -72,6 +73,13 @@ class ProductionCheck extends Command
         $host = parse_url($url, PHP_URL_HOST);
 
         return in_array($host, ['localhost', '127.0.0.1', '::1'], true);
+    }
+
+    private function envHasPlaceholders(): bool
+    {
+        $path = app()->environmentFilePath();
+
+        return is_file($path) && str_contains((string) file_get_contents($path), 'CAMBIAR');
     }
 
     private function paymentMethodsConfigured(): bool

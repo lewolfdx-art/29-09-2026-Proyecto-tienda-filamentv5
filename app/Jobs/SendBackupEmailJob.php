@@ -37,7 +37,7 @@ class SendBackupEmailJob implements ShouldQueue
 
         $body = $this->attachmentPath
             ? "Adjuntamos el respaldo de la base de datos generado el {$this->dateLabel()}.\n\n"
-                ."El archivo está cifrado con AES-256 y la contraseña configurada en BACKUP_ARCHIVE_PASSWORD. "
+                .'El archivo está cifrado con AES-256 y la contraseña configurada en BACKUP_ARCHIVE_PASSWORD. '
                 .'Por seguridad, la contraseña no se incluye en este correo.'
             : "El respaldo de la base de datos generado el {$this->dateLabel()} supera el límite de {$limitMb} MB, "
                 ."por eso no se adjunta.\n\nPuedes descargarlo desde el panel de administración con el siguiente enlace. "

@@ -27,6 +27,9 @@ echo "==> Instalando dependencias PHP"
 echo "==> Ejecutando migraciones"
 "$PHP_BIN" artisan migrate --force
 
+echo "==> Sincronizando permisos del panel"
+"$PHP_BIN" artisan app:sync-permissions
+
 echo "==> Compilando assets"
 if command -v npm >/dev/null 2>&1; then
     npm ci

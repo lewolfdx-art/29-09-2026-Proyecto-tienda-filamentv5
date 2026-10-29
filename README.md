@@ -1,59 +1,70 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Tienda
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Tienda online en Laravel 12 con panel de administración en Filament 5. Pensada para Perú:
+pagos manuales por Yape/Plin con comprobante, precios en soles y teléfonos +51.
 
-## About Laravel
+## Qué incluye
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Tienda pública** (`/`): catálogo con búsqueda, carrito en sesión, registro e inicio de
+  sesión de clientes, recuperación de contraseña, checkout, "Mis pedidos" y subida del
+  comprobante de pago.
+- **Panel** (`/admin`): productos (con galería), categorías, clientes, pedidos, usuarios y
+  roles (Filament Shield), registro de auditoría, destinatarios de avisos internos y un
+  dashboard con métricas. Exportación a Excel.
+- **Stock con reservas**: un pedido pendiente reserva las unidades 24 h; al pagarse se
+  descuentan del stock físico. `orders:expire` libera cada 5 minutos las reservas vencidas.
+- **Datos de clientes cifrados**, con índice ciego (HMAC) para poder buscarlos.
+- **Backups diarios** (spatie/laravel-backup) y un zip cifrado de la base de datos por correo.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Un mismo formulario (`/ingresar`) sirve a los dos tipos de cuenta: el equipo (`users`, guard
+`web`) va al panel y los clientes (`customers`, guard `customer`) a la tienda.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Desarrollo local
 
-## Learning Laravel
+```bash
+composer setup        # instala dependencias, crea .env, migra y compila assets
+php artisan app:create-admin
+composer dev          # servidor, cola, logs y Vite a la vez
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+Por defecto usa SQLite. Para cargar productos de ejemplo: `php artisan db:seed`.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Calidad
 
-## Laravel Sponsors
+```bash
+composer test                       # PHPUnit (SQLite en memoria)
+vendor/bin/phpstan analyse          # Larastan
+vendor/bin/pint                     # formato
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+El test del backup por correo necesita el binario `sqlite3` en el PATH; si no está, se omite.
 
-### Premium Partners
+## Producción (Hostinger)
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+1. **Código**: clona el repositorio en el servidor. Lo ideal es que el dominio apunte a
+   `public/`. Si apunta a la raíz del proyecto (`public_html`), el `.htaccess` de la raíz
+   redirige todo a `public/` para que `.env`, `vendor/` y `storage/` no queden expuestos.
+2. **Entorno**: copia [`deploy/env.production.example`](deploy/env.production.example) como
+   `.env`, completa los valores `CAMBIAR` y ejecuta `php artisan key:generate` **una sola vez**.
+   Guarda `APP_KEY` y `BACKUP_ARCHIVE_PASSWORD` fuera del servidor: sin la primera no se pueden
+   leer los datos de los clientes y sin la segunda no se pueden abrir los backups.
+3. **Despliegue**: `bash deploy/hostinger.sh`. Pone la app en mantenimiento, hace `git pull`,
+   instala dependencias, migra, sincroniza permisos, compila assets, cachea la configuración y
+   ejecuta `app:production-check`. Si algo falla, la app queda en mantenimiento.
+4. **Primer administrador**: `php artisan app:create-admin`.
+5. **Cron**: pega los dos trabajos de [`deploy/hostinger-cron.txt`](deploy/hostinger-cron.txt)
+   en hPanel (scheduler y cola, cada minuto). Sin ellos no expiran reservas, no salen correos
+   ni se hacen backups.
+6. **Comprobación**: `php artisan app:production-check` debe salir todo en OK. Después, haz una
+   compra de prueba completa y ejecuta `php artisan app:send-backup-emails` para confirmar que
+   llega el backup.
 
-## Contributing
+### Comandos propios
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+| Comando | Para qué |
+| --- | --- |
+| `app:create-admin` | Crea un usuario con el rol `super_admin`. |
+| `app:sync-permissions` | Genera los permisos del panel y se los da todos a `super_admin`. Se ejecuta en cada despliegue. |
+| `app:production-check` | Verifica la configuración de producción. |
+| `orders:expire` | Libera las reservas de pedidos no pagados a tiempo (cada 5 min). |
+| `app:send-backup-emails` | Envía el zip cifrado de la base de datos (diario, 03:15). |

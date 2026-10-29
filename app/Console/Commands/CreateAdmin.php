@@ -6,7 +6,6 @@ use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
-use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class CreateAdmin extends Command
@@ -43,10 +42,9 @@ class CreateAdmin extends Command
             'password' => $password,
         ]);
 
-        $role = Role::findOrCreate('super_admin', 'web');
-        $role->syncPermissions(Permission::all());
+        $this->call(SyncPermissions::class);
 
-        $user->assignRole($role);
+        $user->assignRole(Role::findByName('super_admin', 'web'));
 
         $this->info("Administrador creado: {$user->email}");
 

@@ -68,8 +68,8 @@ class Order extends Model
         static::created(function (Order $order) {
             StoreNotifier::orderPlaced($order);
 
-            // Un pedido creado ya pagado avisa al equipo, pero todav��a no tiene
-            // art��culos: el stock se descuenta cuando se a��adan (ver OrderItem).
+            // Un pedido creado ya pagado avisa al equipo, pero todavía no tiene
+            // artículos: el stock se descuenta cuando se añadan (ver OrderItem).
             if ($order->status === 'paid') {
                 StoreNotifier::orderPaid($order);
             }

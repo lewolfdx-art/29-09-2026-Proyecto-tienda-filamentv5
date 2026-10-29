@@ -75,7 +75,7 @@ class StoreNotifier
         InternalNotifier::send(
             EmailRecipient::TYPE_NEW_ORDER,
             'Nuevo pedido #'.$order->id,
-            'Cliente: '.($order->customer?->name ?? 'Sin cliente')
+            'Cliente: '.($order->customer->name ?? 'Sin cliente')
                 .' — Total: '.Money::format($order->total),
             OrderResource::getUrl('view', ['record' => $order], panel: 'admin'),
             'Ver pedido',
@@ -87,7 +87,7 @@ class StoreNotifier
         InternalNotifier::send(
             EmailRecipient::TYPE_PAYMENT_PROOF,
             'Comprobante recibido: pedido #'.$order->id,
-            'Cliente: '.($order->customer?->name ?? 'Sin cliente')
+            'Cliente: '.($order->customer->name ?? 'Sin cliente')
                 .' — '.$order->paymentMethodLabel()
                 .' — '.Money::format($order->total),
             OrderResource::getUrl('view', ['record' => $order], panel: 'admin'),

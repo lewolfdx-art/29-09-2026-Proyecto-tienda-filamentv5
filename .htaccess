@@ -1,0 +1,17 @@
+# Solo se usa si el dominio apunta a la raíz del proyecto (public_html en Hostinger)
+# en lugar de a public/. Envía todo a public/ para que .env, vendor/ y storage/
+# nunca se sirvan directamente. Si el dominio ya apunta a public/, no hace nada.
+
+Options -Indexes
+
+# Respaldo por si mod_rewrite no estuviera activo: nunca servir archivos ocultos.
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>

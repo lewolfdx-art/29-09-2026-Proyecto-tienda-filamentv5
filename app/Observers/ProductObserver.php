@@ -24,7 +24,9 @@ class ProductObserver
 
     private function exportar(): void
     {
-        if (app()->runningUnitTests()) {
+        // Solo en local: en el servidor el archivo es parte del código y modificarlo
+        // haría fallar el git pull del siguiente despliegue.
+        if (! app()->isLocal() || app()->runningUnitTests()) {
             return;
         }
 

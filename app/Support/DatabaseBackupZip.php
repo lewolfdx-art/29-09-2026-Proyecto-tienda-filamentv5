@@ -61,8 +61,7 @@ class DatabaseBackupZip
                 ->setUserName((string) ($config['username'] ?? ''))
                 ->setPassword((string) ($config['password'] ?? ''))
                 ->setHost((string) ($config['host'] ?? '127.0.0.1'))
-                ->setPort((int) ($config['port'] ?? 3306))
-                ->setOutputFile($sqlPath);
+                ->setPort((int) ($config['port'] ?? 3306));
 
             $dumpBinaryPath = $config['dump']['dump_binary_path'] ?? null;
 
@@ -70,7 +69,7 @@ class DatabaseBackupZip
                 $dumper->setDumpBinaryPath((string) $dumpBinaryPath);
             }
 
-            $dumper->dump();
+            $dumper->dumpToFile($sqlPath);
 
             return;
         }
@@ -78,8 +77,7 @@ class DatabaseBackupZip
         if ($connection === 'sqlite') {
             Sqlite::create()
                 ->setDbName((string) ($config['database'] ?? ''))
-                ->setOutputFile($sqlPath)
-                ->dump();
+                ->dumpToFile($sqlPath);
 
             return;
         }
